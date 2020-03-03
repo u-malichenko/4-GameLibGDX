@@ -3,91 +3,68 @@ package com.geekbrains.rpg.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
 public class Hero {
-    private Texture texture; //картинка героя
-    private Vector2 position; //две координаты в векторе2 две компоненты х и у сильно упрощает работу с векторами есть методы сложени я ипрочие
-    private float speed; //скорость в пикселях в секунду всех скоростей
+    private Projectile projectile;
+    private TextureRegion texture;
+    private TextureRegion texturePointer;
+    private TextureRegion textureHp;
+    private Vector2 position;
+    private Vector2 dst;
+    private Vector2 tmp;
+    private float lifetime;
+    private float speed;
+    private int hp;
+    private int hpMax;
+    private StringBuilder strBuilder;
 
-    public Hero() {
-        this.texture = new Texture("hero.png"); //герой сам себя рисует
-        this.position = new Vector2(100, 100); // его позиция при инициализации
-        this.speed = 100.0f; // скорость героя
+    public Hero(TextureAtlas atlas) {
+        this.texture = atlas.findRegion("knight");
+        this.texturePointer = atlas.findRegion("pointer");
+        this.textureHp = atlas.findRegion("hp");
+        this.position = new Vector2(100, 100);
+        this.projectile = new Projectile(atlas);
+        this.dst = new Vector2(position);
+        this.tmp = new Vector2(0, 0);
+        this.speed = 300.0f;
+        this.hpMax = 10;
+        this.hp = 10;
+        this.strBuilder = new StringBuilder();
     }
 
-    /**
-     * просим его нарисоваться на экране прокинув ему ссылку на бач
-     *
-     * @param batch прокидываем ссылку на бач
-     */
     public void render(SpriteBatch batch) {
-        //для вращения использыуем перегрузку
-        // originXY - якорь относительно которого все делается
-        // width(h) - изменять размер длинны и высоты картинки
-        // scaleXY - масштаб 1 = исходный мастшаб
-        // rotation -  поворот в грудусах
-        // srcXY -  когда на текстуре много картинок координаты этого кусочка
-        // srcWidth(H) -  длинна и выстота этого кусочка выпиливаемого квадратика
-        // flipXY - отзеркаливание картинки
-        batch.draw(texture, position.x - 32, position.y - 32, 32, 32, 64, 64, 1, 1, 0, 0, 0, 64, 64, false, false);
-        // бач нарисуй мою картинку нарисовать героя на позиции х у
-        // возможны многие перегрузки этоо метода примерно 10
-        //х-32 - отрисовать картинку от центра 64пикселей левее и ниже на половину размера картинки
+        batch.draw(texturePointer, dst.x - 30, dst.y - 30, 30, 30, 60, 60, 0.5f, 0.5f, lifetime * 90.0f);
+        batch.draw(texture, position.x - 30, position.y - 30, 30, 30, 60, 60, 1, 1, 0);
+        batch.draw(textureHp, position.x - 30, position.y + 30, 60 * ((float) hp / hpMax), 12);
+        projectile.render(batch);
     }
 
-    /**
-     * выполнение игоровой логики для персонажа тут
-     *
-     * @param dt время последней отрисовки
-     */
-    public void update(float dt, Pointer pointer) {
-        if (position.x < pointer.getPointerPosition().x) {
-            position.x += speed * dt;
-        }
-        if (position.x > pointer.getPointerPosition().x) {
-            position.x -= speed * dt;
-        }
+    public void renderGUI(SpriteBatch batch, BitmapFont font) {
+        strBuilder.setLength(0);
+        strBuilder.append("Class: ").append("Knight").append("\n");
+        strBuilder.append("HP: ").append(hp).append(" / ").append(hpMax).append("\n");
+        font.draw(batch, strBuilder, 10, 710);
+    }
 
-        if (position.y < pointer.getPointerPosition().y) {
-            position.y += speed * dt;
+    public void update(float dt) {
+        projectile.update(dt);
+        lifetime += dt;
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+            dst.set(Gdx.input.getX(), 720.0f - Gdx.input.getY());
         }
-        if (position.y > pointer.getPointerPosition().y) {
-            position.y -= speed * dt;
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
+            projectile.setup(position.x, position.y, Gdx.input.getX(), 720.0f - Gdx.input.getY());
         }
-
-//        //модуль инпут - ввода - а зажата ли какая либо кнопка?
-//        if (Gdx.input.isKeyPressed(Input.Keys.A)) { //если зажата кнопка А
-//            if (position.x < 32) {
-//                position.x = 32;
-//            } else {
-//                position.x -= speed * dt; // то тогда мы хотим чтоб координата по х уменьшалась по формуле скорость * на дельта тайм
-//                // персонаж идет в левую сторону
-//            }
-//        }
-//        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-//            if (position.x > 1280 - 32) {
-//                position.x = 1280 - 32;
-//            } else {
-//                position.x += speed * dt; //персонадж идет в правую тсорону
-//            }
-//        }
-//        //чтоб двигался в верх нам нужно тчоб координата у увеличивалась, аналогично наоборот уменьшалась - в низ
-//        if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-//            if (position.y < 32) {
-//                position.y = 32;
-//            } else {
-//                position.y -= speed * dt; //двигатся вниз
-//            }
-//        }
-//        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-//            if (position.y > 720-32) {
-//                position.y = 720-32;
-//            } else {
-//                position.y += speed * dt; //двигаться в верх
-//            }
-//        }
-//        //по диагонали срабатывает пара ифов
+        tmp.set(dst).sub(position).nor().scl(speed); // вектор скорости
+        if (position.dst(dst) > speed * dt) {
+            position.mulAdd(tmp, dt);
+        } else {
+            position.set(dst);
+        }
     }
 }

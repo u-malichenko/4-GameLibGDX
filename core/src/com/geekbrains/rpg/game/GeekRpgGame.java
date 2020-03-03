@@ -4,70 +4,55 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
 public class GeekRpgGame extends ApplicationAdapter {
-    private SpriteBatch batch;  //пока просто рисовалка
-    private Texture textureGrass;   // картинку загнать в видеопамять = текстура
+    private SpriteBatch batch;
+    private BitmapFont font32;
+    private TextureAtlas atlas;
+    private TextureRegion textureGrass;
     private Hero hero;
-    private Pointer pointer;
 
     // Домашнее задание:
-    // - Разобраться с кодом
-    // - Персонаж должен двигаться к указателю
+    // 0. Разобраться с кодом
+    // 1. Добавить на экран яблоко, и попробовать отследить попадание
+    // стрелы в яблоко, при попадании яблоко должно появиться в новом месте
+    // 2. ** Попробуйте заставить героя выпускать по несколько стрел
 
-    /**
-     * создание, срабатывает при запуске приложения
-     * подготовительный этап
-     */
     @Override
     public void create() {
-        batch = new SpriteBatch();  // инициализируем спрайтбатч = создаем один бач на всю панель
-        hero = new Hero(); //создаем героя
-        pointer = new Pointer();
-        textureGrass = new Texture("grass.png");    // из папки Ассес грузим текстуру создаем текстуру которая будет сформирована из файла  rass.png
+        this.batch = new SpriteBatch();
+        this.atlas = new TextureAtlas("game.pack");
+        this.hero = new Hero(atlas);
+        this.textureGrass = atlas.findRegion("grass");
+        this.font32 = new BitmapFont(Gdx.files.internal("font32.fnt"));
     }
 
-    /**
-     * жизеный цикл = метод инит ( апдате и рендер)Цикл - диспоус
-     * этот метод крутитится 60 раз в секунду. изменяется в зависимости от мощности железа FPS frames per seconds
-     * тут отрисовка и обработка логики, отвечает за отрисовку обрабатывает слои по порядку
-     */
     @Override
     public void render() {
-        float dt = Gdx.graphics.getDeltaTime(); //сколько милисекунд прошло с последней отрисовки - дельтатайм 60 FPS = 1\60 sec 30FPS =1\30 sec
-        // все рассчеты должны зависеть от этого времени, задаем скорость = 100px/sec за секунду перснаж должен подвинутья на 10 пикселей не важно какой там FPS
-        // формула движения = x+=v*dt пример за секунду мы смещаемся на 100 пикселей =  60FPS = s = 60*100*(1/60) = 100px 60 раз сделаем эту операцию
-        update(dt);     //обновляем игровую логику, запускаем метод апдате, а уже потом нарисовали мир
-        Gdx.gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);    //цвет отчистки экрана
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);   //проим отчистить экран(форму) этим цветом что-то из ОпэнДЖИЭЛЬ)
-        batch.begin();  //старт отрисовки обращаемся к бачу
-        for (int i = 0; i < 16; i++) { //рисуем траву
+        float dt = Gdx.graphics.getDeltaTime();
+        update(dt);
+        Gdx.gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        batch.begin();
+        for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 9; j++) {
-                batch.draw(textureGrass, i * 80, j * 80);   //бач нарисуй картинку в точке х у
+                batch.draw(textureGrass, i * 80, j * 80);
             }
         }
-        pointer.render(batch);
-        hero.render(batch); //просим героя нарисоваться
-        batch.end();    //конец отрисовки, все рисованое должно находится между бегином и эндом иначе словим Эксепшен
+        hero.render(batch);
+        hero.renderGUI(batch, font32);
+        batch.end();
     }
 
-    /**
-     * игровая логика тут, чтоб не считать ее в рендере
-     * метод отвечает за математику
-     *
-     * @param dt
-     */
     public void update(float dt) {
-        pointer.update(dt);
-        hero.update(dt, pointer); //просим героя апдейтится и передаем ему дельта тайм
+        hero.update(dt);
     }
 
-    /**
-     * после завершения работы приложения запускается этот метод
-     * освобождение ресурсов, ресурсы видеопамяти нужно чистить самим из памяти так как сборщик туда доступа не имеет
-     */
     @Override
     public void dispose() {
         batch.dispose();
