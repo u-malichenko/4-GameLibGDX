@@ -39,11 +39,11 @@ public class Projectile {
         active = false;
     }
 
-    public void renderGUI(SpriteBatch batch, BitmapFont font) {
-        strBuilder.setLength(0); //отчистить
-        strBuilder.append(index); //не использовать конкатенацию только аппенд
-        font.draw(batch, strBuilder, position.x+10, position.y+10);
-    }
+//    public void renderGUI(SpriteBatch batch, BitmapFont font) {
+//        strBuilder.setLength(0); //отчистить
+//        strBuilder.append(index); //не использовать конкатенацию только аппенд
+//        font.draw(batch, strBuilder, position.x+10, position.y+10);
+//    }
 
     public void render(SpriteBatch batch) {
         if (active) { //если объект активен, нарисуй
@@ -63,6 +63,10 @@ public class Projectile {
                 //выпустить снаряд можно только если он не активен
             }
         }
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     public Vector2 getPosition() {

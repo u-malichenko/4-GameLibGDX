@@ -53,7 +53,7 @@ public class Hero {
         font.draw(batch, strBuilder, 10, 710);//нарисуй себя на баче
     }
 
-    public void update(float dt) {
+    public void update(float dt, GeekRpgGame game) {
         //projectile.update(dt, target); //неправильно, они должны жить отдельно от героев
         lifetime += dt;
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) { //если левая кнопка только нажата туда мы пошли
@@ -61,7 +61,13 @@ public class Hero {
         }
 
         if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) { //если нажата правая кнопка мы туда пульнули
-            projectile.setup(position.x, position.y, Gdx.input.getX(), 720.0f - Gdx.input.getY());
+            for (Projectile p : game.getPull()) {
+                if(!p.isActive()){
+                    p.setup(position.x, position.y, Gdx.input.getX(), 720.0f - Gdx.input.getY());
+                    break;
+                }
+            }
+            //projectile.setup(position.x, position.y, Gdx.input.getX(), 720.0f - Gdx.input.getY());
             //запустить инициализацию у сетапа передав в его позицию и координаты направления
         }
 

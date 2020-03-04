@@ -55,8 +55,9 @@ public class GeekRpgGame extends ApplicationAdapter {
         this.font32 = new BitmapFont(Gdx.files.internal("font32.fnt"));
         this.font10 = new BitmapFont(Gdx.files.internal("font10.fnt"));
         this.target = new Target(atlas);
+        this.pull = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            this.pull.add(new Projectile(atlas));
+            pull.add(new Projectile(atlas));
         }
 
     }
@@ -72,7 +73,7 @@ public class GeekRpgGame extends ApplicationAdapter {
         target.render(batch);
         for (int i = 0; i < 5; i++) {
             pull.get(i).render(batch);
-            pull.get(i).renderGUI(batch,font32);
+            //pull.get(i).renderGUI(batch,font32);
         }
 
         hero.render(batch);
@@ -86,7 +87,11 @@ public class GeekRpgGame extends ApplicationAdapter {
             target.update(pull.get(i));
         }
 
-        hero.update(dt);
+        hero.update(dt,this);
+    }
+
+    public ArrayList<Projectile> getPull() {
+        return pull;
     }
 
     public void fillBackground(){
