@@ -8,7 +8,6 @@ import com.badlogic.gdx.math.Vector2;
 public class Target {
     private TextureRegion textureRegion;
     private Vector2 position;
-
     private float width;
     private float height;
     private int originX;
@@ -21,7 +20,6 @@ public class Target {
         this.height = 60;
         this.originX = 30;
         this.originY = 30;
-
     }
 
     public void reSetup() {

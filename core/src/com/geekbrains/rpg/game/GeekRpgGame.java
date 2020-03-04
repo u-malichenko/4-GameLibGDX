@@ -73,7 +73,7 @@ public class GeekRpgGame extends ApplicationAdapter {
         target.render(batch);
         for (int i = 0; i < 5; i++) {
             pull.get(i).render(batch);
-            //pull.get(i).renderGUI(batch,font32);
+            pull.get(i).renderGUI(batch,font10);
         }
 
         hero.render(batch);

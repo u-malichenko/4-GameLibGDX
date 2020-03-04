@@ -23,6 +23,7 @@ public class Projectile {
         this.velocity = new Vector2(0, 0); //скорость
         this.speed = 800.0f;
         this.active = false; //либо активен либо нет
+        this.strBuilder = new StringBuilder();
 
     }
 
@@ -39,25 +40,23 @@ public class Projectile {
         active = false;
     }
 
-//    public void renderGUI(SpriteBatch batch, BitmapFont font) {
-//        strBuilder.setLength(0); //отчистить
-//        strBuilder.append(index); //не использовать конкатенацию только аппенд
-//        font.draw(batch, strBuilder, position.x+10, position.y+10);
-//    }
+    public void renderGUI(SpriteBatch batch, BitmapFont font) {
+        if (active) {//только если снаряд не активный
+            strBuilder.setLength(0); //отчистить
+            strBuilder.append(index); //не использовать конкатенацию только аппенд
+            font.draw(batch, strBuilder, position.x, position.y + 20);
+        }
+    }
 
     public void render(SpriteBatch batch) {
         if (active) { //если объект активен, нарисуй
             batch.draw(textureRegion, position.x - 30, position.y - 30, 30, 30, 60, 60, 1, 1, velocity.angle());
-            //velocity.angle()) угол поворота у вектора скорости запросили угол
         }
     }
 
     public void update(float dt) {
         if (active) { // если санаряд активен
             position.mulAdd(velocity, dt); //двигаем снаряд
-
-            //position.mulAdd(velocity, dt) - к вектору position добавляем вектор движения
-            //прибавление с умножением на ДТ обоих координат в нужном направлении
             if (position.x < 0 || position.x > 1280 || position.y < 0 || position.y > 720) {
                 deactivate(); //деактивация за размерами экрана
                 //выпустить снаряд можно только если он не активен
