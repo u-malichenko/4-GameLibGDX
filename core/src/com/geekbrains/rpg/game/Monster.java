@@ -54,11 +54,13 @@ public class Monster {
      *
      * @param amount - сколько утрона вычитать?
      */
-    public void takeDamage(int amount) {
+    public boolean takeDamage(int amount) {
         hp -= amount;
         if (hp == 0) {
             reSetup();
+            return true;
         }
+        return false;
     }
 
     public void reSetup() {
@@ -66,8 +68,6 @@ public class Monster {
         float y = (float) (Math.random() * 650) + 30;
         position.set(x, y);
         hp = 30;
-        gameScreen.getHero().addCoin();
-
     }
 
     /**
