@@ -1,74 +1,83 @@
 package com.geekbrains.rpg.game;
 
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
-public class Projectile {
-    private static int count = 0;
+public class Projectile implements Poolable {//делаем прожектиль пулабл чтоб создавать пулы оных
     private TextureRegion textureRegion;
     private Vector2 position;
     private Vector2 velocity;
-    private float speed;
-    private int index;
     private boolean active;
-    private StringBuilder strBuilder;
 
-    public Projectile(TextureAtlas atlas) {
-        this.index = count++;
-        this.textureRegion = atlas.findRegion("arrow");
-        this.position = new Vector2(0, 0); //кординаты
-        this.velocity = new Vector2(0, 0); //скорость
-        this.speed = 800.0f;
-        this.active = false; //либо активен либо нет
-        this.strBuilder = new StringBuilder();
-
+    /**
+     * геттер для прожектиля, получаем его координаты
+     * нужно для проверки попадания стрелы в монстра
+     * @return
+     */
+    public Vector2 getPosition() {
+        return position;
     }
 
-    //метод для выстрела стрелой
-    public void setup(float x, float y, float targetX, float targetY) {//из какой точки она вылетает, и куда мы хотим выпульнуть?
-        if (!active) {//только если снаряд не активный
-            position.set(x, y);//позиция объекта устанавливается в начальную точку
-            velocity.set(targetX, targetY).sub(x, y).nor().scl(speed); // получаем вектор в назанчение нормируем его и множим на скорость
-            active = true; //активировали снаряд
-        }
-    }
-
-    public void deactivate() {
-        active = false;
-    }
-
-    public void renderGUI(SpriteBatch batch, BitmapFont font) {
-        if (active) {//только если снаряд не активный
-            strBuilder.setLength(0); //отчистить
-            strBuilder.append(index); //не использовать конкатенацию только аппенд
-            font.draw(batch, strBuilder, position.x, position.y + 20);
-        }
-    }
-
-    public void render(SpriteBatch batch) {
-        if (active) { //если объект активен, нарисуй
-            batch.draw(textureRegion, position.x - 30, position.y - 30, 30, 30, 60, 60, 1, 1, velocity.angle());
-        }
-    }
-
-    public void update(float dt) {
-        if (active) { // если санаряд активен
-            position.mulAdd(velocity, dt); //двигаем снаряд
-            if (position.x < 0 || position.x > 1280 || position.y < 0 || position.y > 720) {
-                deactivate(); //деактивация за размерами экрана
-                //выпустить снаряд можно только если он не активен
-            }
-        }
-    }
-
+    /**
+     * метд который мы обязаны создать так как прожектилю сделали пулабл инетрфейс(он там написан)
+     * @return
+     */
+    @Override
     public boolean isActive() {
         return active;
     }
 
-    public Vector2 getPosition() {
-        return position;
+    /**
+     * конструктор пустой- создаем болванки (не нужно прокидывать атлас и ни чего иного)
+     * это нужно для того чтоб не париться с созданием newObject в конструкторе прожектилей,
+     * там мы ему не смогли бы передать все нужные свойства,
+     * а нам нужно его просто создать а все свойства мвы пропишем ему в блоке setup ниже
+     */
+    public Projectile() { //создаем абсолютно пустые объекты
+        this.textureRegion = null; //когда создаем снаряд должны сказать как он выглядит(их может бытть много разных видов)
+        this.position = new Vector2(0, 0); //позиция
+        this.velocity = new Vector2(0, 0); //скорость
+        this.active = false; //активность
+    }
+
+    /** ВКЛЮЧИТЬ ПРОЖЕКТИЛЬ
+     * пробрасываем сюда регион текстур! разные снаряды будут требовать рзные текстуры
+     * посему передаем регион (передем его из контроллера
+     * проверка на активность убрана так как все идет через контроллер (стоит снаружи)
+     */
+    public void setup(TextureRegion textureRegion, float x, float y, float targetX, float targetY) {
+        this.textureRegion = textureRegion;
+        this.position.set(x, y);
+        this.velocity.set(targetX, targetY).sub(x, y).nor().scl(800.0f);
+        this.active = true;
+    }
+
+    /**
+     * ДЕАКТИВИРОВТАЬ ПРОЖЕКТИЛЬ
+     */
+    public void deactivate() {
+        active = false;
+    }
+
+    /** НАРИСОВАТЬ
+     * убираем тут проверку на активность так как есть теперь контроллер - он сам это делает
+     * так как мы ходим только по списку активных элементов
+     * @param batch
+     */
+    public void render(SpriteBatch batch) {
+        batch.draw(textureRegion, position.x - 30, position.y - 30, 30, 30, 60, 60, 1, 1, velocity.angle());
+    }
+
+    /**ОБНОВИТЬ
+     * проверку на активность в нутри самого прожектиля вообще везде убираем
+     * ак кк она идет вконтроллере и тут просто не нужна чтоб не тратить время
+     * @param dt
+     */
+    public void update(float dt) {
+        position.mulAdd(velocity, dt);
+        if (position.x < 0 || position.x > 1280 || position.y < 0 || position.y > 720) {
+            deactivate();
+        }
     }
 }
