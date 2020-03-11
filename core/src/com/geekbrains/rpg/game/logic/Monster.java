@@ -18,6 +18,11 @@ public class Monster extends GameCharacter implements Poolable, MapElement {
     private float attackTime;
     private boolean active;
 
+    @Override
+    public boolean isActive() {
+        return active;
+    }
+
     /**
      * пробрасываем контроллер игры здоровье макс и скорость в конструктор родителя - GameCharacter:
      * super(gc, 20, 100.0f);
@@ -27,11 +32,18 @@ public class Monster extends GameCharacter implements Poolable, MapElement {
      * @param gc - гейм контроллер, получаем при создании при инициализауии и пробрасываем к родителю в конструктор нужен для связи
      */
     public Monster(GameController gc) {
-        super(gc, 20, 100.0f);
-        this.changePosition(800.0f, 600.0f);
+        super(gc, 0, 0.0f);
+        this.changePosition(0.0f, 0.0f);
         this.dst.set(position);
+        this.active = false;
     }
 
+    public void setup(TextureRegion texture) {
+        this.texture = texture;
+        this.changePosition(MathUtils.random(0, 1280), MathUtils.random(0, 720));
+        this.dst.set(position);
+        this.active = true;
+    }
     /**
      * ЕСЛИ МОНСТРА УНИЧТОЖИЛИ то тогда деактивируем
      */
@@ -80,11 +92,5 @@ public class Monster extends GameCharacter implements Poolable, MapElement {
         } else if (dst.equals(position)) {
             dst.set(MathUtils.random(0, 1280), MathUtils.random(0, 720));
         }
-
-    }
-
-    @Override
-    public boolean isActive() {
-        return active;
     }
 }
