@@ -5,20 +5,22 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.geekbrains.rpg.game.logic.utils.ObjectPool;
 import com.geekbrains.rpg.game.screens.utils.Assets;
 
-public class ProjectilesController extends ObjectPool<Projectile> {
-    private TextureRegion projectileTextureRegion;
+public class MonsterController extends ObjectPool<Monster> {
+    private TextureRegion texture;
+
+    //TODO должен создавать ботов каждые 30 сек
 
     @Override
-    protected Projectile newObject() {
-        return new Projectile();
+    protected Monster newObject() {
+        return new Monster();
     }
 
-    public ProjectilesController() {
-        this.projectileTextureRegion = Assets.getInstance().getAtlas().findRegion("arrow");
+    public MonsterController() {
+        this.texture = Assets.getInstance().getAtlas().findRegion("knight");
     }
 
     public void setup(float x, float y, float targetX, float targetY) {
-        getActiveElement().setup(projectileTextureRegion, x, y, targetX, targetY);
+        getActiveElement().setup(texture, x, y, targetX, targetY);
     }
 
     public void render(SpriteBatch batch) {
