@@ -67,7 +67,7 @@ public class GameController {
     public GameController() {
         this.projectilesController = new ProjectilesController();
         this.hero = new Hero(this);
-        this.monsterController = new MonsterController(); //this
+        this.monsterController = new MonsterController(this);
         this.map = new Map();
         this.tmp = new Vector2(0, 0);
         this.tmp2 = new Vector2(0, 0);

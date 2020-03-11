@@ -6,21 +6,23 @@ import com.geekbrains.rpg.game.logic.utils.ObjectPool;
 import com.geekbrains.rpg.game.screens.utils.Assets;
 
 public class MonsterController extends ObjectPool<Monster> {
+    private GameController gc;
     private TextureRegion texture;
 
     //TODO должен создавать ботов каждые 30 сек
 
     @Override
     protected Monster newObject() {
-        return new Monster();
+        return new Monster(gc);
     }
 
-    public MonsterController() {
+    public MonsterController(GameController gc) {
+        this.gc = gc;
         this.texture = Assets.getInstance().getAtlas().findRegion("knight");
     }
 
-    public void setup(float x, float y, float targetX, float targetY) {
-        getActiveElement().setup(texture, x, y, targetX, targetY);
+    public void setup() {
+        getActiveElement().setup(texture);
     }
 
     public void render(SpriteBatch batch) {
