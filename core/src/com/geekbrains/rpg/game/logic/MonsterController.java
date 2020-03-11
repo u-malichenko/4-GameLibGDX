@@ -6,6 +6,7 @@ import com.geekbrains.rpg.game.logic.utils.ObjectPool;
 import com.geekbrains.rpg.game.screens.utils.Assets;
 
 public class MonsterController extends ObjectPool<Monster> {
+    private float lifetime;
     private GameController gc;
     private TextureRegion texture;
 
@@ -17,6 +18,7 @@ public class MonsterController extends ObjectPool<Monster> {
     }
 
     public MonsterController(GameController gc) {
+        this.lifetime = 0;
         this.gc = gc;
         this.texture = Assets.getInstance().getAtlas().findRegion("knight");
     }
@@ -32,6 +34,10 @@ public class MonsterController extends ObjectPool<Monster> {
     }
 
     public void update(float dt) {
+        lifetime += dt;
+        if(lifetime>30){
+            setup();
+        }
         for (int i = 0; i < getActiveList().size(); i++) {
             getActiveList().get(i).update(dt);
         }
