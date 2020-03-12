@@ -10,15 +10,13 @@ public class MonsterController extends ObjectPool<Monster> {
     private GameController gc;
     private TextureRegion texture;
 
-    //TODO должен создавать ботов каждые 30 сек
-
     @Override
     protected Monster newObject() {
         return new Monster(gc);
     }
 
     public MonsterController(GameController gc) {
-        this.lifetime = 0;
+        this.lifetime = 28;
         this.gc = gc;
         this.texture = Assets.getInstance().getAtlas().findRegion("knight");
     }
@@ -27,15 +25,10 @@ public class MonsterController extends ObjectPool<Monster> {
         getActiveElement().setup(texture);
     }
 
-    public void render(SpriteBatch batch) {
-        for (int i = 0; i < getActiveList().size(); i++) {
-            getActiveList().get(i).render(batch, null);
-        }
-    }
-
     public void update(float dt) {
         lifetime += dt;
-        if(lifetime>30){
+        if (lifetime > 30) {
+            lifetime = 0;
             setup();
         }
         for (int i = 0; i < getActiveList().size(); i++) {

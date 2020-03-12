@@ -3,37 +3,51 @@ images1.png
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-grass
+wall
   rotate: false
   xy: 2, 2
+  size: 80, 120
+  orig: 80, 120
+  offset: 0, 0
+  index: -1
+dwarf
+  rotate: false
+  xy: 84, 2
+  size: 800, 100
+  orig: 800, 100
+  offset: 0, 0
+  index: -1
+grass
+  rotate: false
+  xy: 2, 124
   size: 80, 80
   orig: 80, 80
   offset: 0, 0
   index: -1
 pointer
   rotate: false
-  xy: 84, 2
+  xy: 886, 2
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 knight
   rotate: false
-  xy: 150, 2
+  xy: 952, 2
   size: 60, 60
   orig: 60, 60
   offset: 0, 0
   index: -1
 arrow
   rotate: false
-  xy: 150, 64
+  xy: 84, 104
   size: 60, 60
   orig: 60, 60
   offset: 0, 0
   index: -1
 hp
   rotate: false
-  xy: 2, 84
+  xy: 2, 206
   size: 60, 8
   orig: 60, 8
   offset: 0, 0
