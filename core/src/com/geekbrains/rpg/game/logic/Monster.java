@@ -49,6 +49,7 @@ public class Monster extends GameCharacter implements Poolable, MapElement {
      */
     @Override
     public void onDeath() {
+
         active = false;
     }
 
@@ -75,9 +76,6 @@ public class Monster extends GameCharacter implements Poolable, MapElement {
      */
     public void update(float dt) {
         super.update(dt);
-        //TODO проверять расстояние до героя если оно меньше 300 тогда идти иначе двигаться к рандомной точке на карте
-        // если герой в зоне видимости то дст перемещать к герою
-        // иначе бот бежит в последнюю точку дст, если он добежал до это й дст то тогда гененрирует себе новю случайную точку дст и идет теперь к ней
 
         if (this.position.dst(gc.getHero().getPosition()) < 300) {
             System.out.println(this.position.dst(gc.getHero().getPosition()));
