@@ -37,6 +37,14 @@ public class ScreenManager {
 //        return camera;
 //    }
 
+    public static int getWorldWidth() {
+        return WORLD_WIDTH;
+    }
+
+    public static int getWorldHeight() {
+        return WORLD_HEIGHT;
+    }
+
     private ScreenManager() {
     }
 

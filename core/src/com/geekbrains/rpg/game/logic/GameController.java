@@ -14,6 +14,7 @@ public class GameController {
     private ProjectilesController projectilesController;
     private MonstersController monstersController;
     private List<GameCharacter> allCharacters;
+    private List<Weapon> allWeapon;
     private Map map;
     private Hero hero;
     private Vector2 tmp, tmp2;
@@ -24,6 +25,10 @@ public class GameController {
      */
     public List<GameCharacter> getAllCharacters() {
         return allCharacters;
+    }
+
+    public List<Weapon> getAllWeapon() {
+        return allWeapon;
     }
 
     public Hero getHero() {
@@ -53,6 +58,7 @@ public class GameController {
      */
     public GameController() {
         this.allCharacters = new ArrayList<>();
+        this.allWeapon = new ArrayList<>();
         this.projectilesController = new ProjectilesController();
         this.hero = new Hero(this);
         this.map = new Map();
@@ -77,6 +83,9 @@ public class GameController {
      */
     public void update(float dt) {
         allCharacters.clear();
+
+        //allWeapon.clear();
+
         allCharacters.add(hero);
         allCharacters.addAll(monstersController.getActiveList());
 
