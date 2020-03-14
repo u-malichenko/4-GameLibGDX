@@ -13,6 +13,7 @@ import java.util.List;
 public class GameController {
     private ProjectilesController projectilesController;
     private MonstersController monstersController;
+    private WeaponController weaponController;
     private List<GameCharacter> allCharacters;
     private List<Weapon> allWeapon;
     private Map map;
@@ -62,6 +63,7 @@ public class GameController {
         this.projectilesController = new ProjectilesController();
         this.hero = new Hero(this);
         this.map = new Map();
+        this.weaponController =new WeaponController(this,7);
         this.monstersController = new MonstersController(this, 5);
         this.tmp = new Vector2(0, 0);
         this.tmp2 = new Vector2(0, 0);

@@ -182,37 +182,37 @@ public abstract class GameCharacter implements MapElement {
      * ОБЩИЙ МЕТОД ПЕРЕМЕШЕНИЯ ПЕРСОНАЖА
      * ВЫнесли в общий класс движение монстра и героя:
      * ветор скорости=:
-     *              tmp.set(dst).sub(position).nor().scl(speed);
+     * tmp.set(dst).sub(position).nor().scl(speed);
      * запоминаем старую позицию=:
-     *              tmp2.set(position);
+     * tmp2.set(position);
      * если позишин больше тогда он двигается в сторону назначения dst:
-     *              if (position.dst(dst) > speed * dt) {
-     *                  position.mulAdd(tmp, dt);
+     * if (position.dst(dst) > speed * dt) {
+     * position.mulAdd(tmp, dt);
      * иначе он уставнавливается в позицию назначения  чтоб не дергался:
-     *              } else {
-     *                  position.set(dst);
+     * } else {
+     * position.set(dst);
      * если мы добрались до точки назначения то стейт меняем на бездействие
      * и мы перестанем делать проверки что нам надо кудато бежать: пришли и стоим на месте
-     *                      state = State.IDLE;
+     * state = State.IDLE;
      * сделаем так чтоб персонаж не мог зайти в стену, перед перемещением проверяем что не стена:
      * после первоначального перемещения - если клетка не проходима?:
      * мапа говорит нам что земля в той точке где мы сейчас стоим не проходима:
-     *          if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
+     * if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
      * то мы возвращаемся на точку назад:
-     *          position.set(tmp2);
+     * position.set(tmp2);
      * далее делаем плавное обтекание стены:
      * пробуем сместится только по х:
-     *          position.add(tmp.x * dt, 0);
+     * position.add(tmp.x * dt, 0);
      * если после этого мы все еще в стене?:
-     *          if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
+     * if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
      * то мы сбрасываем наше положение:
-     *          position.set(tmp2);
+     * position.set(tmp2);
      * и пробуем сместится по У:
-     *          position.add(0, tmp.y * dt);
+     * position.add(0, tmp.y * dt);
      * если после смещения по У мы все равно оказались в стене:
-     *      if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
+     * if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
      * то стоим на месте и не щшевелимся:
-     *      position.set(tmp2);
+     * position.set(tmp2);
      *
      * @param dt
      */
@@ -220,7 +220,7 @@ public abstract class GameCharacter implements MapElement {
         tmp.set(dst).sub(position).nor().scl(speed);
         tmp2.set(position); //запоминаем старую позицию
         if (position.dst(dst) > speed * dt) {
-            changePosition((position.x += tmp.x * dt),(position.y += tmp.y * dt));
+            changePosition((position.x += tmp.x * dt), (position.y += tmp.y * dt));
             //position.mulAdd(tmp, dt);
         } else {
 
@@ -229,17 +229,20 @@ public abstract class GameCharacter implements MapElement {
             state = State.IDLE;
         }
         if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
-            position.set(tmp2);
+            changePosition(tmp2);
+            //position.set(tmp2);
 
-            changePosition((position.x += tmp.x * dt),(position.y));
+            changePosition((position.x += tmp.x * dt), (position.y));
             //position.add(tmp.x * dt, 0);
             if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
-                position.set(tmp2);
+                changePosition(tmp2);
+                //position.set(tmp2);
 
-                changePosition((position.x),(position.y += tmp.y * dt));
+                changePosition((position.x), (position.y += tmp.y * dt));
                 //position.add(0, tmp.y * dt);
                 if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
-                    position.set(tmp2);
+                    changePosition(tmp2);
+                    //position.set(tmp2);
                 }
             }
         }
