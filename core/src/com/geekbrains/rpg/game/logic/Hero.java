@@ -7,10 +7,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.geekbrains.rpg.game.screens.utils.Assets;
 
-/**
- * герой является игровым персонажем инаследуется от абстрактного класса GameCharacter
- *
- */
 public class Hero extends GameCharacter {
     private TextureRegion texturePointer;
     private int coins;
@@ -21,15 +17,16 @@ public class Hero extends GameCharacter {
     }
 
     /**
-     * конструктор героя
-     * super(gc, 10, 300.0f); отдали гейм контроллер, жизнь и скорость в конструктор абстрактного класса родителя GameCharacter
-     * загружаем сами текстуру героя и поинтера:
-     *         this.texture = Assets.getInstance().getAtlas().findRegion("knight");
-     *         this.texturePointer = Assets.getInstance().getAtlas().findRegion("pointer");
-     * меняем позицию персонажа при инициализации:
-     *         this.changePosition(100.0f, 100.0f);
-     * this.dst.set(position); дст = начальной позиции, при инициализации
      *
+     *      * Мы добились:
+     *      *              логика обработки состояний живет только в GameCharacter
+     *      *              а переход из состояния в состояние живет в кадом конкретном виде персонажей МОнстр Герой
+     *      герой управляе мышкой может атаковать если ткнули в монстра то он станет целью для героя
+     *      либо если ткнули в траву то трава станет дст для движения
+     *
+     *
+     * this.type = Type.RANGED; - герой типа дальнебойный
+     * this.attackRadius = 150.0f; -радиус атаки героя
      * @param gc
      */
     public Hero(GameController gc) {
@@ -39,13 +36,10 @@ public class Hero extends GameCharacter {
         this.changePosition(100.0f, 100.0f);
         this.dst.set(position);
         this.strBuilder = new StringBuilder();
+        this.type = Type.RANGED;
+        this.attackRadius = 150.0f;
     }
 
-    /**
-     * этот мтеод -  extends GameCharacte - implements MapElement
-     * @param batch
-     * @param font
-     */
     @Override
     public void render(SpriteBatch batch, BitmapFont font) {
         batch.draw(texturePointer, dst.x - 30, dst.y - 30, 30, 30, 60, 60, 0.5f, 0.5f, lifetime * 90.0f);
@@ -62,30 +56,57 @@ public class Hero extends GameCharacter {
     }
 
     /**
-     * абстрактный класс родителя GameCharacter
-     * нужен для различных действий в случае гибили разных персонажей
-     * тут конкретно мы просто сбрасываем деньги в 0 и залечиваем в макс - так кк это герой
-     * у монстров этот метод будет совсем другой
+     * нужно вызывать родительский метод так как там прописано что у всех кто сюда метил сбрасывается цель и атака
      */
     @Override
     public void onDeath() {
+        super.onDeath();
         coins = 0;
         hp = hpMax;
     }
 
-    /**все поведние общее для персонажей выносим в суперский апдейт и потом просто его выполняем
-     * super.update(dt); - прокидываем в родительский метод ДТ
-     * @param dt - разница времени с предыдущего обновления
+    /**
+     * в ПЕрсонажах будут правила смены состояний а то как эти состояния обрабатываются будут в базовом классе(GameCharacter)
+     * тоесть по сути и герои и монстры ведут себя одинаково а как меняются их состояния зависит либо от мозгов бота либо от нашей мышки
+     * управляем только левой кнопкой
+     * если нажата левая кнопка:
+     *         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+     *  нужно понять куда мы тыкнули, в землю или в монстра, перебираем всех активных монстров:
+     *             for (int i = 0; i < gc.getMonstersController().getActiveList().size(); i++) {
+     *  получаем каждого монстра:
+     *                 Monster m = gc.getMonstersController().getActiveList().get(i);
+     *  если растояние от центра монстра до позиции клика мышки(Gdx.input.getX(), 720.0f - Gdx.input.getY()) меньше 30:
+     *                 if (m.getPosition().dst(Gdx.input.getX(), 720.0f - Gdx.input.getY()) < 30.0f) {
+     *  переходим в состояние атаки:
+     *                     state = State.ATTACK;
+     *  назначаем цель - данного монстра:
+     *                     target = m;
+     *  зыходим из метода вообще
+     *                     return;
+     *  если цикл закончился пустым значит это не монстр, а просто земля
+     *  значит просто идем к этой точке:
+     *             dst.set(Gdx.input.getX(), 720.0f - Gdx.input.getY());
+     *  Меняем состояние на передвижение
+     *             state = State.MOVE;
+     *  цель нулевая
+     *             target = null;
+     * @param dt
      */
     @Override
     public void update(float dt) {
         super.update(dt);
-
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+            for (int i = 0; i < gc.getMonstersController().getActiveList().size(); i++) {
+                Monster m = gc.getMonstersController().getActiveList().get(i);
+                if (m.getPosition().dst(Gdx.input.getX(), 720.0f - Gdx.input.getY()) < 30.0f) {
+                    state = State.ATTACK;
+                    target = m;
+                    return;
+                }
+            }
             dst.set(Gdx.input.getX(), 720.0f - Gdx.input.getY());
-        }
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
-            gc.getProjectilesController().setup(position.x, position.y, Gdx.input.getX(), 720.0f - Gdx.input.getY());
+            state = State.MOVE;
+            target = null;
         }
     }
 }
