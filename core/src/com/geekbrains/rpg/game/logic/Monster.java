@@ -3,6 +3,7 @@ package com.geekbrains.rpg.game.logic;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.geekbrains.rpg.game.logic.utils.Poolable;
 import com.geekbrains.rpg.game.screens.utils.Assets;
 

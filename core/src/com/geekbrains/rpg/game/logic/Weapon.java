@@ -1,31 +1,33 @@
 package com.geekbrains.rpg.game.logic;
 
+
+// - Добавить класс Weapon (оружие) и раздать каждому персонажу по оружию
+// Оружие определяет тип бойца - ближний/дальний бой. Свойства оружия:
+// дальность атаки, урон, скорость атаки
+
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector2;
-import com.geekbrains.rpg.game.logic.utils.MapElement;
+import com.geekbrains.rpg.game.logic.utils.Poolable;
 import com.geekbrains.rpg.game.screens.utils.Assets;
 
-/**
- * * Мы добились:
- * *              логика обработки состояний живет только в GameCharacter
- * *              а переход из состояния в состояние живет в кадом конкретном виде персонажей МОнстр Герой
- * <p>
- * protected GameCharacter lastAttacker; - последний атакующий персонаж нужен для реализации убегания монстра в случае малого здоровья
- * <p>
- * protected float attackRadius; - радиус видимости
- * protected float attackRadius; - радиус атаки
- */
-public abstract class GameCharacter implements MapElement {
-    /**
-     * состояния персонажей
-     * RETREAT - раненый монст должен убегать
-     */
-    public enum State {
-        IDLE, MOVE, ATTACK, PURSUIT, RETREAT
-    }
+import java.util.List;
 
-    //TODO
+public class Weapon implements Poolable {
+    protected GameController gc;
+    protected TextureRegion texture;
+    protected List weaponList;
+    protected Type type;
+    protected float attackRadius;
+    protected  int damage;
+    protected float attackTime;
+    protected Circle area;
+
+    @Override
+    public boolean isActive() {
+        //TODO
+        return false;
+    }
 
     /**
      * варианты персонажей
@@ -35,31 +37,8 @@ public abstract class GameCharacter implements MapElement {
         MELEE, RANGED
     }
 
-    protected GameController gc;
-
-    protected TextureRegion texture;
-    protected TextureRegion textureHp;
-
-    protected Type type;//TODO
-    protected State state;
-    protected float stateTimer;
-    protected float attackRadius;//TODO
-
-    protected GameCharacter lastAttacker;
-    protected GameCharacter target;
-
     protected Vector2 position;
-    protected Vector2 dst;
     protected Vector2 tmp;
-    protected Vector2 tmp2;
-
-    protected Circle area;
-
-    protected float lifetime;
-    protected float visionRadius;
-    protected float attackTime;//TODO
-    protected float speed;
-    protected int hp, hpMax;
 
     public int getCellX() {
         return (int) position.x / 80;
@@ -87,33 +66,21 @@ public abstract class GameCharacter implements MapElement {
     public Circle getArea() {
         return area;
     }
-
-    //TODO
-    public boolean isAlive() {
-        return hp > 0;
-    }
-
     /**
      * this.state = State.IDLE; - когда создаем персонаж он всегда в состоянии ни чего не деланья
      * this.target = null; - цель
      * this.stateTimer = 1.0f; - таймер на состояния
      *
      * @param gc
-     * @param hpMax
-     * @param speed
+
      */
-    public GameCharacter(GameController gc, int hpMax, float speed) {
+    public Weapon(GameController gc) {
         this.gc = gc;
-        this.textureHp = Assets.getInstance().getAtlas().findRegion("hp");
         this.tmp = new Vector2(0.0f, 0.0f);
-        this.tmp2 = new Vector2(0.0f, 0.0f);
-        this.dst = new Vector2(0.0f, 0.0f);
         this.position = new Vector2(0.0f, 0.0f);
         this.area = new Circle(0.0f, 0.0f, 15);
-        this.hpMax = hpMax;
-        this.hp = this.hpMax;
         this.speed = speed;
-        this.state = State.IDLE;
+        this.state = GameCharacter.State.IDLE;
         this.stateTimer = 1.0f;
         this.target = null;
     }
@@ -153,24 +120,24 @@ public abstract class GameCharacter implements MapElement {
     public void update(float dt) {
         lifetime += dt;
         //ЕСЛИ ТЫ В СТОСТОЯНИ АТАКИ:
-        if (state == State.ATTACK) {
+        if (state == GameCharacter.State.ATTACK) {
             dst.set(target.getPosition()); //установим дст в цель
         }
 
         //ДВИЖЕНИЕ ДЛЯ ОПРЕЛЕННЫХ СТАТУСОВ
-        if (state == State.MOVE || state == State.RETREAT || (state == State.ATTACK && this.position.dst(target.getPosition()) > attackRadius - 5)) {
+        if (state == GameCharacter.State.MOVE || state == GameCharacter.State.RETREAT || (state == GameCharacter.State.ATTACK && this.position.dst(target.getPosition()) > attackRadius - 5)) {
             moveToDst(dt);
         }
 
         //ЕСЛИ В СОСТОЯНИИ АТАКА И ЦЕЛЬ попрежнему в РАДИУСЕ атаки:
-        if (state == State.ATTACK && this.position.dst(target.getPosition()) < attackRadius) {
+        if (state == GameCharacter.State.ATTACK && this.position.dst(target.getPosition()) < attackRadius) {
             attackTime += dt;
             if (attackTime > 0.3f) {
                 attackTime = 0.0f;
-                if (type == Type.MELEE) { //наносим урон без прожектиля
+                if (type == GameCharacter.Type.MELEE) { //наносим урон без прожектиля
                     target.takeDamage(this, 1);
                 }
-                if (type == Type.RANGED) { // стреляем прожектилем
+                if (type == GameCharacter.Type.RANGED) { // стреляем прожектилем
                     gc.getProjectilesController().setup(this, position.x, position.y, target.getPosition().x, target.getPosition().y);
                 }
             }
@@ -226,7 +193,7 @@ public abstract class GameCharacter implements MapElement {
 
             changePosition(dst);
             //position.set(dst);
-            state = State.IDLE;
+            state = GameCharacter.State.IDLE;
         }
         if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
             changePosition(tmp2);
@@ -275,7 +242,7 @@ public abstract class GameCharacter implements MapElement {
      */
     public void resetAttackState() {
         dst.set(position);
-        state = State.IDLE;
+        state = GameCharacter.State.IDLE;
         target = null;
     }
 
@@ -299,4 +266,5 @@ public abstract class GameCharacter implements MapElement {
             }
         }
     }
+
 }
