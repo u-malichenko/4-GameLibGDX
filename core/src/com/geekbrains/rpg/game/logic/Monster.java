@@ -2,8 +2,8 @@ package com.geekbrains.rpg.game.logic;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.geekbrains.rpg.game.logic.utils.Poolable;
 import com.geekbrains.rpg.game.screens.utils.Assets;
 
@@ -32,22 +32,30 @@ public class Monster extends GameCharacter implements Poolable {
     }
 
     /**
-     * this.attackRadius = 150.0f; - радиус видимости для атаки для гонки за героем
-     * this.type = Type.RANGED; - монстр дальнебойныого типа
-     * this.attackRadius = 150.0f; радиус атаки монстров
+     * грузим пачку текстур распиливаем текстуру на 8 регионов
+     * метод сплит режет на кусочки 60*60 получаем двумерный массив 8 столбцов и одна строка:
+     *      this.texture = new TextureRegion(Assets.getInstance().getAtlas().findRegion("dwarf60")).split(60,60);
+     *если рандом выдал до 30
+     *         if(MathUtils.random(100)< 30){
+     * выдать оружие дальнобойное:
+     *            this.weapon = Weapon.createSimpleRangedWeapon();
+     *         } else {
+     * иначе выдать ближнебойное оружие:
+     *             this.weapon = Weapon.createSimpleMeleeWeapon();
+
      * @param gc
      */
     public Monster(GameController gc) {
         super(gc, 20, 100.0f);
-        this.texture = Assets.getInstance().getAtlas().findRegion("knight");
+
+        this.textures = new TextureRegion(Assets.getInstance().getAtlas().findRegion("dwarf")).split(60,60);
         this.changePosition(800.0f, 300.0f);
         this.dst.set(this.position);
         this.visionRadius = 160.0f;
-        this.type = Type.values()[MathUtils.random(0, 1)];
-        if(type.equals(Type.values()[0])){
-            this.attackRadius = 60.0f;
+        if(MathUtils.random(100)< 30){
+            this.weapon = Weapon.createSimpleRangedWeapon();
         } else {
-            this.attackRadius = 150.0f;
+            this.weapon = Weapon.createSimpleMeleeWeapon();
         }
 
     }
@@ -64,25 +72,63 @@ public class Monster extends GameCharacter implements Poolable {
      */
     public void generateMe() {
         do {
-            changePosition(MathUtils.random(0, 1280), MathUtils.random(0, 720));
+            changePosition(MathUtils.random(0, 1280), MathUtils.random(0, 700));
         } while (!gc.getMap().isGroundPassable(position));
         hpMax = 20;
         hp = hpMax;
     }
     /**
      * нужно вызывать родительский метод так как там прописано что у всех кто сюда метил сбрасывается цель и атака
+     * если монстр умирает то выподает оружие:
+     *         gc.getWeaponsController().setup(position.x,position.y);
      */
     @Override
     public void onDeath() {
         super.onDeath();
+        gc.getWeaponsController().setup(position.x,position.y);
     }
 
+    /**
+     * рисуем текстуру индекс картнки берем в методом из GameCharacter
+     * batch.draw(textures[0][getCurrentFrameIndex()], position.x -
+     *         //для разворота анимации: так же нужно делать и в герое
+     * если наш персонаж идет вправо:
+     *        if (dst.x > position.x){ , точка dst назначения справа
+     *           if(currentRegion.isFlipX()){ /и уже он флипнут по х а наш регион сейчас отзеркален
+     *                 currentRegion.flip(true,false);//разворот x развернись и ссмотри вправо
+     *              }else { иначе если надо идти влево
+     *    иначе        if(!currentRegion.isFlipX()){ //и он НЕ флипнут по х а он не отзеркален влевую сторону
+     *                 currentRegion.flip(true,false); //флипаем по х отзеркаливаем
+     *
+     *  textures[0] - отвечает за строки массива где должны лежать разне анимации - удар отскок и прочие ее нужно меннять в зависимости от действия:
+     *  ВИД анаимации:  TextureRegion currentRegion = textures[0][getCurrentFrameIndex()];
+     *
+     * прячем полоску здоровья если она целая:
+     *         if(hp<hpMax){
+     *             batch.draw(textureHp, position.x - 30, position.y + 30, 60 * ((float) hp / hpMax), 12);
+     *
+     * @param batch
+     * @param font
+     */
     @Override
     public void render(SpriteBatch batch, BitmapFont font) {
-        batch.setColor(0.5f, 0.5f, 0.5f, 0.7f);
-        batch.draw(texture, position.x - 30, position.y - 30, 30, 30, 60, 60, 1, 1, 0);
-        batch.setColor(1, 1, 1, 1);
-        batch.draw(textureHp, position.x - 30, position.y + 30, 60 * ((float) hp / hpMax), 12);
+        TextureRegion currentRegion = textures[0][getCurrentFrameIndex()];
+        //для разворота анимации:
+        if (dst.x > position.x){
+            if(currentRegion.isFlipX()){
+                currentRegion.flip(true,false);
+            }
+        }else {
+            if(!currentRegion.isFlipX()){
+                currentRegion.flip(true,false);
+            }
+        }
+
+        batch.draw(currentRegion, position.x - 30, position.y - 30, 30, 30, 60, 60, 2, 2, 0);
+        if(hp<hpMax){
+            batch.draw(textureHp, position.x - 30, position.y + 30, 60 * ((float) hp / hpMax), 12);
+        }
+
     }
 
     /** в ПЕрсонажах будут правила смены состояний а то как эти состояния обрабатываются будут в базовом классе(GameCharacter)

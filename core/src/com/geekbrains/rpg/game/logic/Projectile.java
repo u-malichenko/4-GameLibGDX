@@ -15,7 +15,12 @@ public class Projectile implements Poolable, MapElement {
     private GameCharacter owner;
     private Vector2 position;
     private Vector2 velocity;
+    private int damage;
     private boolean active;
+
+    public int getDamage() {
+        return damage;
+    }
 
     /**
      * геттер на влвдельца снаряда
@@ -62,11 +67,12 @@ public class Projectile implements Poolable, MapElement {
      */
 
 
-    public void setup(GameCharacter owner, TextureRegion textureRegion, float x, float y, float targetX, float targetY) {
+    public void setup(GameCharacter owner, TextureRegion textureRegion, float x, float y, float targetX, float targetY, int damage) {
         this.owner = owner;
         this.textureRegion = textureRegion;
         this.position.set(x, y);
         this.velocity.set(targetX, targetY).sub(x, y).nor().scl(800.0f);
+        this.damage = damage;
         this.active = true;
     }
 

@@ -10,39 +10,81 @@ wall
   orig: 80, 120
   offset: 0, 0
   index: -1
-dwarf
+simpleButton
   rotate: false
   xy: 84, 2
-  size: 800, 100
-  orig: 800, 100
+  size: 320, 80
+  orig: 320, 80
   offset: 0, 0
   index: -1
-grass
+shortButton
   rotate: false
   xy: 2, 124
   size: 80, 80
   orig: 80, 80
   offset: 0, 0
   index: -1
-pointer
+grass
   rotate: false
-  xy: 886, 2
+  xy: 84, 84
+  size: 80, 80
+  orig: 80, 80
+  offset: 0, 0
+  index: -1
+weaponRanged
+  rotate: false
+  xy: 84, 166
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
+weaponMelee
+  rotate: false
+  xy: 166, 84
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+pointer
+  rotate: false
+  xy: 166, 150
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+dwarf60
+  rotate: false
+  xy: 406, 2
+  size: 480, 60
+  orig: 480, 60
+  offset: 0, 0
+  index: -1
+dwarf
+  rotate: false
+  xy: 406, 64
+  size: 480, 60
+  orig: 480, 60
+  offset: 0, 0
+  index: -1
 knight
   rotate: false
-  xy: 952, 2
+  xy: 232, 84
   size: 60, 60
   orig: 60, 60
   offset: 0, 0
   index: -1
 arrow
   rotate: false
-  xy: 84, 104
+  xy: 232, 146
   size: 60, 60
   orig: 60, 60
+  offset: 0, 0
+  index: -1
+smButton
+  rotate: false
+  xy: 888, 2
+  size: 120, 32
+  orig: 120, 32
   offset: 0, 0
   index: -1
 hp

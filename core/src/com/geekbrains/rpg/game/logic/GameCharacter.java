@@ -25,25 +25,18 @@ public abstract class GameCharacter implements MapElement {
         IDLE, MOVE, ATTACK, PURSUIT, RETREAT
     }
 
-    //TODO
-
-    /**
-     * варианты персонажей
-     * ближний бой, лучник
-     */
-    public enum Type {
-        MELEE, RANGED
-    }
+    //высота и ширина стандартной картинки
+    static final int WIDTH = 60;
+    static final int HEIGHT = 60;
 
     protected GameController gc;
 
-    protected TextureRegion texture;
+    //делаем массив текстур для анимации:
+    protected TextureRegion[][] textures;
     protected TextureRegion textureHp;
 
-    protected Type type;//TODO
     protected State state;
     protected float stateTimer;
-    protected float attackRadius;//TODO
 
     protected GameCharacter lastAttacker;
     protected GameCharacter target;
@@ -56,10 +49,16 @@ public abstract class GameCharacter implements MapElement {
     protected Circle area;
 
     protected float lifetime;
+    protected float attackTime;
+    protected float walkTime; //таймер для анимации
+    protected float timePerFrame;  //скорость смены кадра анимации
+
     protected float visionRadius;
-    protected float attackTime;//TODO
     protected float speed;
     protected int hp, hpMax;
+
+    protected Weapon weapon; //каждый персонаж владеет только 1 оружием оружие делается в конструкторе каждого персонада отдельно сами они его вояют
+
 
     public int getCellX() {
         return (int) position.x / 80;
@@ -69,11 +68,41 @@ public abstract class GameCharacter implements MapElement {
         return (int) (position.y - 20) / 80;
     }
 
+    /**
+     * метод установить подобранное оружие
+     *
+     * @param weapon
+     */
+    public void setWeapon(Weapon weapon) {
+        this.weapon = weapon;
+    }
+
+    /**
+     * корректриов ка координат по окну -20 по ногам персонажа
+     * Map.MAP_CELLS_HEIGHT*80 - колличество ячеек умноженное на 80-размер квадрата
+     * поскольку только этот метод занимается перемещением
+     * он тут же перемещает окружность персонажа
+     * он тут же проверяет выход за пределы экрана
+     * смена позиции везде только через этот метод, ни в коем случае не должно быть set
+     *
+     * @param x
+     * @param y
+     */
     public void changePosition(float x, float y) {
-        if (x >= 0 && x <= 1280 || y >= 0 && y <= 720) {
-            position.set(x, y);
-            area.setPosition(x, y - 20);
+        position.set(x, y);
+        if (position.x < 0.1f) {
+            position.x = 0.1f;
         }
+        if (position.y - 20 < 0.1f) { //-20 так как рассчитываем все для позиции ног
+            position.y = 20.1f;
+        }
+        if (position.x > Map.MAP_CELLS_WIDTH * 80 - 1) {
+            position.x = Map.MAP_CELLS_WIDTH * 80 - 1;
+        }
+        if (position.y - 20 > Map.MAP_CELLS_HEIGHT * 80 - 1) {
+            position.y = Map.MAP_CELLS_HEIGHT * 80 - 1 + 20;
+        }
+        area.setPosition(position.x, position.y - 20);
     }
 
     public void changePosition(Vector2 newPosition) {
@@ -115,10 +144,24 @@ public abstract class GameCharacter implements MapElement {
         this.speed = speed;
         this.state = State.IDLE;
         this.stateTimer = 1.0f;
+        this.timePerFrame = 0.2f; //скорость смены кадра анимации
         this.target = null;
     }
 
     /**
+     * метод который будет возвращать индекс кадра  текстуры
+     * //формула для рассчета индекса показываемого кадра, в зависимости от текущего времени и и от вермени на кадре чем меньше время на кадре тем быстрее дергаются
+     * // index = (int)(walkTime/timePerFrame)%колличество кадров
+     *
+     * @return
+     */
+    public int getCurrentFrameIndex() {
+        return (int) (walkTime / timePerFrame) % textures[0].length;
+    }
+
+    /**
+     * все относительно атаки вынесли в оружие и как персонаж будет бить зависит от того какое у его оружие в руках
+     * <p>
      * все поведние общее для персонажей выносим в суперский апдейт и потом просто его выполняем
      * в ПЕрсонажах будут правила смены состояний а то как эти состояния обрабатываются будут в базовом классе(тут)
      * тоесть по сути и герои и монстры ведут себя одинаково а как меняются их состояния зависит либо от мозгов бота либо от нашей мышки
@@ -130,15 +173,15 @@ public abstract class GameCharacter implements MapElement {
      * if (state == State.ATTACK) { dst.set(target.getPosition()); - дст = координатам нашей мишени
      * <p>
      * //ДВИЖЕНИЕ ДЛЯ ОПРЕЛЕННЫХ СТАТУСОВ
-     * если статус движение ИЛИ статус = УБЕГАТЬ ИЛИ АТАКА И цель находится в радиусе атаки-5(чтоб не ближний код)  то:
-     * if (state == State.MOVE || state == State.RETREAT || (state == State.ATTACK && this.position.dst(target.getPosition()) > attackRadius - 5)) {
+     * если статус движение ИЛИ статус = УБЕГАТЬ ИЛИ АТАКА И цель находится в радиусе атаки ОРУЖИЯ -10(чтоб не ближний код)  то:
+     * if (state == State.MOVE || state == State.RETREAT || (state == State.ATTACK && this.position.dst(target.getPosition()) > weapon.getRange()-10)) {
      * moveToDst(dt); - запускаем метод перемещения
      * <p>
      * //ЕСЛИ В СОСТОЯНИИ АТАКА И ЦЕЛЬ попрежнему в РАДИУСЕ ВИДИМОСТИ:
-     * если ты в состоянии АТАКИ и расстояние до героя меньше радиуса атаки то:
-     * if (state == State.ATTACK && this.position.dst(target.getPosition()) < attackRadius) {
+     * если ты в состоянии АТАКИ и расстояние до героя меньше радиуса атаки который берем у оружия то:
+     * if (state == State.ATTACK && this.position.dst(target.getPosition()) < weapon.getRange()) {
      * attackTime += dt; - атактайм накапливается
-     * if (attackTime > 0.3f) { - если атак тайм больше 3 секунд(каждые 3 сек)
+     * if (attackTime > weapon.getSpeed()) { //скорость атаки сравниваем с течением времени // OLDif (attackTime > 0.3f) { - если атак тайм больше 3 секунд(каждые 3 сек)
      * attackTime = 0.0f; - сбрасывать атактайм
      * if (type == Type.MELEE) { - если тип персонажа БЛИЖНИЙ БОЙ:
      * target.takeDamage(this, 1); мы наносим урон 1
@@ -158,25 +201,25 @@ public abstract class GameCharacter implements MapElement {
         }
 
         //ДВИЖЕНИЕ ДЛЯ ОПРЕЛЕННЫХ СТАТУСОВ
-        if (state == State.MOVE || state == State.RETREAT || (state == State.ATTACK && this.position.dst(target.getPosition()) > attackRadius - 5)) {
+        if (state == State.MOVE || state == State.RETREAT || (state == State.ATTACK && this.position.dst(target.getPosition()) > weapon.getRange() - 10)) {
             moveToDst(dt);
         }
 
         //ЕСЛИ В СОСТОЯНИИ АТАКА И ЦЕЛЬ попрежнему в РАДИУСЕ атаки:
-        if (state == State.ATTACK && this.position.dst(target.getPosition()) < attackRadius) {
+        if (state == State.ATTACK && this.position.dst(target.getPosition()) < weapon.getRange()) { //
             attackTime += dt;
-            if (attackTime > 0.3f) {
+            if (attackTime > weapon.getSpeed()) { //скорость атаки сравниваем с течением времени
                 attackTime = 0.0f;
-                if (type == Type.MELEE) { //наносим урон без прожектиля
-                    target.takeDamage(this, 1);
+                if (weapon.getType() == Weapon.Type.MELEE) { //наносим урон без прожектиля, если оружие в руках для ближнего боя =
+                    target.takeDamage(this, weapon.generateDamage());
                 }
-                if (type == Type.RANGED) { // стреляем прожектилем
-                    gc.getProjectilesController().setup(this, position.x, position.y, target.getPosition().x, target.getPosition().y);
+                if (weapon.getType() == Weapon.Type.RANGED && target != null) { // стреляем прожектилем, если оружие в руках = дальнобойное и цель еще есть
+                    gc.getProjectilesController().setup(this, position.x, position.y, target.getPosition().x, target.getPosition().y, weapon.generateDamage());
                 }
             }
         }
-        //area.setPosition(position.x, position.y - 20);
     }
+
 
     /**
      * ОБЩИЙ МЕТОД ПЕРЕМЕШЕНИЯ ПЕРСОНАЖА
@@ -219,30 +262,20 @@ public abstract class GameCharacter implements MapElement {
     public void moveToDst(float dt) {
         tmp.set(dst).sub(position).nor().scl(speed);
         tmp2.set(position); //запоминаем старую позицию
-        if (position.dst(dst) > speed * dt) {
-            changePosition((position.x += tmp.x * dt), (position.y += tmp.y * dt));
-            //position.mulAdd(tmp, dt);
-        } else {
+        walkTime += dt; // для включения анимации, если перемешаем то ногами шевелит
 
-            changePosition(dst);
-            //position.set(dst);
+        if (position.dst(dst) > speed * dt) { //перемещение в штатном режиме
+            changePosition(position.x + tmp.x * dt, position.y + tmp.y * dt);
+        } else {
+            changePosition(dst); //перемешение когда путь мешьше шага
             state = State.IDLE;
         }
-        if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
-            changePosition(tmp2);
-            //position.set(tmp2);
-
-            changePosition((position.x += tmp.x * dt), (position.y));
-            //position.add(tmp.x * dt, 0);
-            if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
-                changePosition(tmp2);
-                //position.set(tmp2);
-
-                changePosition((position.x), (position.y += tmp.y * dt));
-                //position.add(0, tmp.y * dt);
-                if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {
+        if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) { //если вдруг мы влипли в стену
+            changePosition(tmp2.x + tmp.x * dt, tmp2.y); //плывем по х
+            if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) {//если и по х мы попадаем в сткну
+                changePosition(tmp2.x, tmp2.y + tmp.y * dt);//плывем по у
+                if (!gc.getMap().isGroundPassable(getCellX(), getCellY())) { //если опять влипли то стоим
                     changePosition(tmp2);
-                    //position.set(tmp2);
                 }
             }
         }

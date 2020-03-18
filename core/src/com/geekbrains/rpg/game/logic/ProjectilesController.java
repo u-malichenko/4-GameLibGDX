@@ -17,8 +17,8 @@ public class ProjectilesController extends ObjectPool<Projectile> {
         this.projectileTextureRegion = Assets.getInstance().getAtlas().findRegion("arrow");
     }
 
-    public void setup(GameCharacter owner, float x, float y, float targetX, float targetY) {
-        getActiveElement().setup(owner, projectileTextureRegion, x, y, targetX, targetY);
+    public void setup(GameCharacter owner, float x, float y, float targetX, float targetY, int damage) {
+        getActiveElement().setup(owner, projectileTextureRegion, x, y, targetX, targetY, damage);
     }
 
     public void update(float dt) {

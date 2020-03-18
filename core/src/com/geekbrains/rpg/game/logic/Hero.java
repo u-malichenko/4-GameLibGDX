@@ -17,34 +17,45 @@ public class Hero extends GameCharacter {
     }
 
     /**
-     *
+     * грузи свою картинку - распиливац ее на блоки 60 на 60 получится двумерныый массив размер будет пока 1 на 1
+     *            this.textures = new TextureRegion(Assets.getInstance().getAtlas().findRegion("knight")).split(60,60);
      *      * Мы добились:
      *      *              логика обработки состояний живет только в GameCharacter
      *      *              а переход из состояния в состояние живет в кадом конкретном виде персонажей МОнстр Герой
      *      герой управляе мышкой может атаковать если ткнули в монстра то он станет целью для героя
      *      либо если ткнули в траву то трава станет дст для движения
-     *
+     * даем персонажу оружие:
+     *         this.weapon = Weapon.createSimpleMeleeWeapon();
      *
      * this.type = Type.RANGED; - герой типа дальнебойный
      * this.attackRadius = 150.0f; -радиус атаки героя
      * @param gc
      */
     public Hero(GameController gc) {
-        super(gc, 10, 300.0f);
-        this.texture = Assets.getInstance().getAtlas().findRegion("knight");
+        super(gc, 80, 300.0f);
+        this.textures = new TextureRegion(Assets.getInstance().getAtlas().findRegion("knight")).split(60,60);
         this.texturePointer = Assets.getInstance().getAtlas().findRegion("pointer");
         this.changePosition(100.0f, 100.0f);
         this.dst.set(position);
         this.strBuilder = new StringBuilder();
-        this.type = Type.RANGED;
-        this.attackRadius = 150.0f;
+        this.weapon = Weapon.createSimpleMeleeWeapon();
+
     }
 
+    /**
+     *     * рисуем текстуру индекс картнки берем в методом из GameCharacter, анимация из 1 кадра
+     *      * batch.draw(textures[0][getCurrentFrameIndex()], position.x -
+     *
+     * @param batch
+     * @param font
+     */
     @Override
     public void render(SpriteBatch batch, BitmapFont font) {
         batch.draw(texturePointer, dst.x - 30, dst.y - 30, 30, 30, 60, 60, 0.5f, 0.5f, lifetime * 90.0f);
-        batch.draw(texture, position.x - 30, position.y - 30, 30, 30, 60, 60, 1, 1, 0);
-        batch.draw(textureHp, position.x - 30, position.y + 30, 60 * ((float) hp / hpMax), 12);
+        batch.draw(textures[0][getCurrentFrameIndex()], position.x - 30, position.y - 30, 30, 30, 60, 60, 1, 1, 0);
+        if(hp< hpMax) {
+            batch.draw(textureHp, position.x - 30, position.y + 30, 60 * ((float) hp / hpMax), 12);
+        }
     }
 
     public void renderGUI(SpriteBatch batch, BitmapFont font) {
@@ -52,6 +63,7 @@ public class Hero extends GameCharacter {
         strBuilder.append("Class: ").append("Knight").append("\n");
         strBuilder.append("HP: ").append(hp).append(" / ").append(hpMax).append("\n");
         strBuilder.append("Coins: ").append(coins).append("\n");
+        strBuilder.append("Weapon: ").append(weapon.getTitle()).append(" [").append( weapon.getMinDamage()).append("-").append(weapon.getMaxDamage()).append("]\n");
         font.draw(batch, strBuilder, 10, 710);
     }
 

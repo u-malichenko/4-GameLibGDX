@@ -1,10 +1,19 @@
 package com.geekbrains.rpg.game.screens;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.geekbrains.rpg.game.GeekRpgGame;
 import com.geekbrains.rpg.game.screens.utils.Assets;
 
+/**
+ * полная цепока создания скрина
+ * -создали класс MenuScreen
+ * -создали поле private GameScreen gameScreen;
+ * - добавили в энам еще один элемент   MENU,
+ * - при запуске создаем этот экран init - this.menuScreen new MenuScreen(batch);
+ * - добавляем ветку в кейс changeScreen
+ */
 public class ScreenManager {
     public enum ScreenType {
         MENU, GAME
@@ -19,6 +28,7 @@ public class ScreenManager {
     private SpriteBatch batch;
     private LoadingScreen loadingScreen;
     private GameScreen gameScreen;
+    private MenuScreen menuScreen;
     private Screen targetScreen;
 //    private Viewport viewport;
 //    private Camera camera;
@@ -51,6 +61,7 @@ public class ScreenManager {
     public void init(GeekRpgGame game, SpriteBatch batch) {
         this.game = game;
         this.batch = batch;
+        this.menuScreen = new MenuScreen(batch);
 //        this.camera = new OrthographicCamera(WORLD_WIDTH, WORLD_HEIGHT);
 //        this.viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
         this.gameScreen = new GameScreen(batch);
@@ -68,20 +79,32 @@ public class ScreenManager {
 //        batch.setProjectionMatrix(camera.combined);
 //    }
 
+    /**
+     * сбрасываем ввод: нужно для должен реагировать на стейт меню  нужно сбросить, иначе он будет видеть те кнопки которых на геймскрине нету обрабатывает только клики мышкой и нажатия клавиатуры
+     *         Gdx.input.setInputProcessor(null); - при проходе между окнами идет сброс проуцесоора встандартное состояние
+     * @param type
+     */
     public void changeScreen(ScreenType type) {
         Screen screen = game.getScreen();
         Assets.getInstance().clear();
+        //сбрасываем ввод:
+        Gdx.input.setInputProcessor(null);
         if (screen != null) {
             screen.dispose();
         }
 //        resetCamera();
         game.setScreen(loadingScreen);
         switch (type) {
-            case GAME:
+            case MENU:
 //                game.setScreen(gameScreen);
-                targetScreen = gameScreen;
-                Assets.getInstance().loadAssets(ScreenType.GAME);
+                targetScreen = menuScreen; // целевой экран, нужен для отображения лоадингскрина
+                Assets.getInstance().loadAssets(ScreenType.MENU);// грузим ассексы для экрана меню
                 break;
+
+            case GAME:
+            targetScreen = gameScreen;
+            Assets.getInstance().loadAssets(ScreenType.GAME);
+            break;
         }
     }
 

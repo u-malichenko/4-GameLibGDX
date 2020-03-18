@@ -13,9 +13,8 @@ import java.util.List;
 public class GameController {
     private ProjectilesController projectilesController;
     private MonstersController monstersController;
-    private WeaponController weaponController;
+    private WeaponsController weaponsController;
     private List<GameCharacter> allCharacters;
-    private List<Weapon> allWeapon;
     private Map map;
     private Hero hero;
     private Vector2 tmp, tmp2;
@@ -26,10 +25,6 @@ public class GameController {
      */
     public List<GameCharacter> getAllCharacters() {
         return allCharacters;
-    }
-
-    public List<Weapon> getAllWeapon() {
-        return allWeapon;
     }
 
     public Hero getHero() {
@@ -52,6 +47,10 @@ public class GameController {
         return projectilesController;
     }
 
+    public WeaponsController getWeaponsController() {
+        return weaponsController;
+    }
+
     /**
      * монстр контроллер можно создать только после того как мапа будет готова такак мы там ее используем для проверки залипания:
      * this.monstersController = new MonstersController(this, 5); - передаем туда ссылку на эту игру и колличество монстров в пачке
@@ -59,11 +58,10 @@ public class GameController {
      */
     public GameController() {
         this.allCharacters = new ArrayList<>();
-        this.allWeapon = new ArrayList<>();
         this.projectilesController = new ProjectilesController();
+        this.weaponsController = new WeaponsController(this);
         this.hero = new Hero(this);
         this.map = new Map();
-        this.weaponController =new WeaponController(this,7);
         this.monstersController = new MonstersController(this, 5);
         this.tmp = new Vector2(0, 0);
         this.tmp2 = new Vector2(0, 0);
@@ -80,13 +78,12 @@ public class GameController {
      *         allCharacters.addAll(monstersController.getActiveList());
      *
      *         monstersController.update(dt);
-     *
+     * отрисовка оружия:
+     *         weaponsController.update(dt);
      * @param dt
      */
     public void update(float dt) {
         allCharacters.clear();
-
-        //allWeapon.clear();
 
         allCharacters.add(hero);
         allCharacters.addAll(monstersController.getActiveList());
@@ -95,6 +92,7 @@ public class GameController {
         monstersController.update(dt);
         checkCollisions();
         projectilesController.update(dt);
+        weaponsController.update(dt);
     }
 
     public void collideUnits(GameCharacter u1, GameCharacter u2) {
@@ -129,6 +127,12 @@ public class GameController {
      *                 Monster m2 = monstersController.getActiveList().get(j);
      *                 collideUnits(m, m2);
      *
+     * перебираем все оружие и у активного оружия если расстояние от центра героя и до центра оружия меньше 20 тогда берем оружие
+     *         for (int i = 0; i < weaponsController.getActiveList().size(); i++) {
+     *             Weapon w = weaponsController.getActiveList().get(i);
+     *             if (hero.getPosition().dst(w.getPosition()) < 20) {
+     *                 w.consume(hero);
+     *             }
      * прожектиль выпустили он летит по карте проверяется возможность удара в стену:
      *         for (int i = 0; i < projectilesController.getActiveList().size(); i++) {
      *             Projectile p = projectilesController.getActiveList().get(i);
@@ -178,6 +182,13 @@ public class GameController {
                 collideUnits(m, m2);
             }
         }
+        //перебираем все оружие и у активного оружия, если расстояние от центра героя и до центра оружия меньше 20 тогда берем оружие
+        for (int i = 0; i < weaponsController.getActiveList().size(); i++) {
+            Weapon w = weaponsController.getActiveList().get(i);
+            if (hero.getPosition().dst(w.getPosition()) < 20) {
+                w.consume(hero);
+            }
+        }
         //прожектиль выпустили он летит по карте
         for (int i = 0; i < projectilesController.getActiveList().size(); i++) {
             Projectile p = projectilesController.getActiveList().get(i);
@@ -186,10 +197,10 @@ public class GameController {
                 p.deactivate();
                 continue;
             }
-
+            //если снаряд влетел:
             if (p.getPosition().dst(hero.getPosition()) < 24 && p.getOwner() != hero) {
                 p.deactivate();
-                hero.takeDamage(p.getOwner(), 1);
+                hero.takeDamage(p.getOwner(), p.getDamage());
             }
             //проверяем на столкноверие с АКТИВНЫМИ монстрами, пребираем активных монстров:
             for (int j = 0; j < monstersController.getActiveList().size(); j++) {
@@ -201,11 +212,7 @@ public class GameController {
                 //снаряд может влететь в монстра не хозяина:
                 if (p.getPosition().dst(m.getPosition()) < 24) {
                     p.deactivate();
-                    //если монстр умер то начисляем бонусы герою)
-                    // TODO даже если монстры убивали сами себя случайно целясь в героя
-                    if (m.takeDamage(p.getOwner(), 1)) {
-                        hero.addCoins(MathUtils.random(1, 10));
-                    }
+                    m.takeDamage(p.getOwner(), p.getDamage());
                 }
             }
         }
