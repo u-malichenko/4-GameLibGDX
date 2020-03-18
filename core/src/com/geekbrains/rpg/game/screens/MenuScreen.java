@@ -24,7 +24,6 @@ public class MenuScreen extends AbstractScreen {
     public void show() {
         font72 = Assets.getInstance().getAssetManager().get("fonts/font72.ttf");
         createGui();
-
     }
 
     @Override
