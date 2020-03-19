@@ -14,6 +14,7 @@ public class GameController {
     private ProjectilesController projectilesController;
     private MonstersController monstersController;
     private WeaponsController weaponsController;
+    private BonusController bonusController;
     private List<GameCharacter> allCharacters;
     private Map map;
     private Hero hero;
@@ -51,6 +52,10 @@ public class GameController {
         return weaponsController;
     }
 
+    public BonusController getBonusController() {
+        return bonusController;
+    }
+
     /**
      * монстр контроллер можно создать только после того как мапа будет готова такак мы там ее используем для проверки залипания:
      * this.monstersController = new MonstersController(this, 5); - передаем туда ссылку на эту игру и колличество монстров в пачке
@@ -60,6 +65,7 @@ public class GameController {
         this.allCharacters = new ArrayList<>();
         this.projectilesController = new ProjectilesController();
         this.weaponsController = new WeaponsController(this);
+        this.bonusController = new BonusController(this);
         this.hero = new Hero(this);
         this.map = new Map();
         this.monstersController = new MonstersController(this, 5);
@@ -93,6 +99,7 @@ public class GameController {
         checkCollisions();
         projectilesController.update(dt);
         weaponsController.update(dt);
+        bonusController.update(dt);
     }
 
     public void collideUnits(GameCharacter u1, GameCharacter u2) {
@@ -187,6 +194,13 @@ public class GameController {
             Weapon w = weaponsController.getActiveList().get(i);
             if (hero.getPosition().dst(w.getPosition()) < 20) {
                 w.consume(hero);
+            }
+        }
+        //перебираем все bonus и у активного , если расстояние от центра героя и до центра bonus меньше 20 тогда берем
+        for (int i = 0; i < bonusController.getActiveList().size(); i++) {
+            Bonus bonus = bonusController.getActiveList().get(i);
+            if (hero.getPosition().dst(bonus.getPosition()) < 20) {
+                bonus.consume(hero);
             }
         }
         //прожектиль выпустили он летит по карте

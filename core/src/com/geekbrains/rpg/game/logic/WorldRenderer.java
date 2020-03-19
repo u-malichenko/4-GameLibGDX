@@ -52,6 +52,12 @@ public class WorldRenderer {
             Weapon w = gc.getWeaponsController().getActiveList().get(i);
             drawables[w.getCellY()].add(w);
         }
+        //отрисовка бонусов
+        for (int i = 0; i < gc.getBonusController().getActiveList().size(); i++) {
+            Bonus bonus = gc.getBonusController().getActiveList().get(i);
+            drawables[bonus.getCellY()].add(bonus);
+        }
+
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();

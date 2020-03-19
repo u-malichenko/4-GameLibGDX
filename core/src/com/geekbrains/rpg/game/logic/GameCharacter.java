@@ -55,10 +55,10 @@ public abstract class GameCharacter implements MapElement {
 
     protected float visionRadius;
     protected float speed;
+    protected int coins;
     protected int hp, hpMax;
 
     protected Weapon weapon; //каждый персонаж владеет только 1 оружием оружие делается в конструкторе каждого персонада отдельно сами они его вояют
-
 
     public int getCellX() {
         return (int) position.x / 80;
@@ -68,6 +68,10 @@ public abstract class GameCharacter implements MapElement {
         return (int) (position.y - 20) / 80;
     }
 
+    public int getCoins() {
+        return coins;
+    }
+
     /**
      * метод установить подобранное оружие
      *
@@ -75,6 +79,14 @@ public abstract class GameCharacter implements MapElement {
      */
     public void setWeapon(Weapon weapon) {
         this.weapon = weapon;
+    }
+
+    public void setHealth() {
+        this.hp = this.hpMax;
+    }
+
+    public void addCoins(int amount) {
+        coins += amount;
     }
 
     /**
@@ -142,6 +154,7 @@ public abstract class GameCharacter implements MapElement {
         this.hpMax = hpMax;
         this.hp = this.hpMax;
         this.speed = speed;
+        this.coins = 0;
         this.state = State.IDLE;
         this.stateTimer = 1.0f;
         this.timePerFrame = 0.2f; //скорость смены кадра анимации

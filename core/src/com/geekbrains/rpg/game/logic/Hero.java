@@ -9,12 +9,11 @@ import com.geekbrains.rpg.game.screens.utils.Assets;
 
 public class Hero extends GameCharacter {
     private TextureRegion texturePointer;
-    private int coins;
     private StringBuilder strBuilder;
 
-    public void addCoins(int amount) {
-        coins += amount;
-    }
+//    public void addCoins(int amount) {
+//        coins += amount;
+//    }
 
     /**
      * грузи свою картинку - распиливац ее на блоки 60 на 60 получится двумерныый массив размер будет пока 1 на 1
