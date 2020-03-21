@@ -30,7 +30,6 @@ public class GameScreen extends AbstractScreen {
     public void show() {
         gc = new GameController();
         worldRenderer = new WorldRenderer(gc, batch);
-        font72 = Assets.getInstance().getAssetManager().get("fonts/font72.ttf");
         createGui();
     }
 

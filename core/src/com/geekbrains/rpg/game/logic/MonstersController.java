@@ -73,4 +73,16 @@ public class MonstersController extends ObjectPool<Monster> {
         }
         checkPool();
     }
+
+
+    public boolean checkVisionMonster(GameCharacter gh){
+        for (int i = 0; i < getActiveList().size(); i++) {
+            Monster m = getActiveList().get(i);
+            if (gh.position.dst(m.getPosition()) < gh.visionRadius) {
+                gh.target = m;
+                return true;
+            }
+        }
+        return false;
+    }
 }

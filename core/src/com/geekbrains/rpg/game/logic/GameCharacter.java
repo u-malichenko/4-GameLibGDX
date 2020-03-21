@@ -17,6 +17,9 @@ import com.geekbrains.rpg.game.screens.utils.Assets;
  * protected float attackRadius; - радиус атаки
  */
 public abstract class GameCharacter implements MapElement {
+
+    private static int count;
+
     /**
      * состояния персонажей
      * RETREAT - раненый монст должен убегать
@@ -47,6 +50,8 @@ public abstract class GameCharacter implements MapElement {
     protected Vector2 tmp2;
 
     protected Circle area;
+
+    protected int name;
 
     protected float lifetime;
     protected float attackTime;
@@ -159,6 +164,7 @@ public abstract class GameCharacter implements MapElement {
         this.stateTimer = 1.0f;
         this.timePerFrame = 0.2f; //скорость смены кадра анимации
         this.target = null;
+        this.name = ++count;
     }
 
     /**
@@ -223,9 +229,9 @@ public abstract class GameCharacter implements MapElement {
             attackTime += dt;
             if (attackTime > weapon.getSpeed()) { //скорость атаки сравниваем с течением времени
                 attackTime = 0.0f;
-                if (weapon.getType() == Weapon.Type.MELEE) { //наносим урон без прожектиля, если оружие в руках для ближнего боя =
+                if (weapon.getType() == Weapon.Type.MELEE && target != null) { //наносим урон без прожектиля, если оружие в руках для ближнего боя =
                     target.takeDamage(this, weapon.generateDamage());
-                }
+                }else
                 if (weapon.getType() == Weapon.Type.RANGED && target != null) { // стреляем прожектилем, если оружие в руках = дальнобойное и цель еще есть
                     gc.getProjectilesController().setup(this, position.x, position.y, target.getPosition().x, target.getPosition().y, weapon.generateDamage());
                 }
@@ -307,6 +313,7 @@ public abstract class GameCharacter implements MapElement {
         lastAttacker = attacker;
         hp -= amount;
         if (hp <= 0) {
+            System.out.println("death = "+this.name);
             onDeath();
             return true;
         }
@@ -322,13 +329,15 @@ public abstract class GameCharacter implements MapElement {
     public void resetAttackState() {
         dst.set(position);
         state = State.IDLE;
+        System.out.println(" reset target= "+this.target.name);
         target = null;
+        lastAttacker = null;
+        System.out.println(" reset target- "+this.name);
     }
 
     /**
      * когда любой пперсонаж погибает мы должны пройти по всем персонажам и скитнуть цель если это она и была
-     * сам убиваемый успокаивает всех кто на его охотился
-     * сброс у всх персонажей активной цели если она умерла
+     * сам убиваемый успокаивает всех кто на его охотился * сброс у всх персонажей активной цели если она умерла
      * обходим всех персонажей:
      * for (int i = 0; i < gc.getAllCharacters().size(); i++) {
      * GameCharacter gameCharacter = gc.getAllCharacters().get(i);
@@ -340,6 +349,7 @@ public abstract class GameCharacter implements MapElement {
     public void onDeath() {
         for (int i = 0; i < gc.getAllCharacters().size(); i++) {
             GameCharacter gameCharacter = gc.getAllCharacters().get(i);
+            System.out.println(gameCharacter.name);
             if (gameCharacter.target == this) {
                 gameCharacter.resetAttackState();
             }

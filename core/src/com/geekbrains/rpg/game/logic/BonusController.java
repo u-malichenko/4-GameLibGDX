@@ -2,6 +2,7 @@ package com.geekbrains.rpg.game.logic;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.geekbrains.rpg.game.logic.utils.ObjectPool;
 
 public class BonusController extends ObjectPool<Bonus> {
@@ -38,10 +39,10 @@ public class BonusController extends ObjectPool<Bonus> {
     public void setup(float x, float y, int coins) {
         Bonus bonus = getActiveElement();
         Bonus.Type type = Bonus.Type.HEALTH;
-        if (MathUtils.random(100) < 40) {
+        if (MathUtils.random(100) < 50) {
             type = Bonus.Type.COINS;
         }
-        bonus.setup(type, "Bonus", coins);
+        bonus.setup(type, type.toString(), coins);
         bonus.setPosition(x, y);
     }
 
@@ -52,5 +53,22 @@ public class BonusController extends ObjectPool<Bonus> {
 
     public int getCurrentFrameIndex(int l) {
         return (int) (walkTime / timePerFrame) % l;
+    }
+
+    /**
+     * для поиска монет и леккарства от кароновируса))))
+     * @param gh
+     * @param type
+     * @return
+     */
+    public Vector2 checkPositionBonus(GameCharacter gh, Bonus.Type type){
+        Vector2 position = new Vector2(gh.getPosition());
+        for (int i = 0; i < gc.getBonusController().getActiveList().size(); i++) {
+            Bonus bonus = gc.getBonusController().getActiveList().get(i);
+            if(bonus.getType() == type && bonus.getPosition().dst(gh.getPosition()) < position.dst(gh.getPosition())){
+                position = bonus.getPosition();
+            }
+        }
+        return position;
     }
 }

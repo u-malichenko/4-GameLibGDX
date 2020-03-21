@@ -110,7 +110,7 @@ public class Weapon implements MapElement, Poolable, Consumable {
     }
 
     /**
-     *выбираем нужную текстуру  в зависимости от дальности
+     *выбираем нужную текстуру  в зависимости от типа
      *         if (type == Type.MELEE) {
      *             texture = Assets.getInstance().getAtlas().findRegion("weaponMelee");
      *         } else {
@@ -124,8 +124,7 @@ public class Weapon implements MapElement, Poolable, Consumable {
      */
     public void setup(Type type, String title, int minDamage, int maxDamage, float speed, float range) {
         this.type = type;
-        //выбираем нужную текстуру  в зависимости от дальности
-        if (type == Type.MELEE) {
+        if (type == Type.MELEE) {        //выбираем нужную текстуру  в зависимости от типа
             texture = Assets.getInstance().getAtlas().findRegion("weaponMelee");
         } else {
             texture = Assets.getInstance().getAtlas().findRegion("weaponRanged");

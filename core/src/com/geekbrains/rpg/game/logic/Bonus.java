@@ -107,11 +107,11 @@ public class Bonus implements MapElement, Poolable, Consumable {
     }
 
     //TODO
-    public static Bonus createBonusHealth() {
-        return new Bonus(Type.HEALTH, "Health");
-    }
-
-    public static Bonus createBonusCoins() {
-        return new Bonus(Type.COINS, "Coins");
-    }
+//    public static Bonus createBonusHealth() {
+//        return new Bonus(Type.HEALTH, "Health");
+//    }
+//
+//    public static Bonus createBonusCoins() {
+//        return new Bonus(Type.COINS, "Coins");
+//    }
 }
