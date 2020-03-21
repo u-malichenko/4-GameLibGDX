@@ -88,6 +88,7 @@ public class Hero extends GameCharacter {
         super.onDeath();
         coins = 0;
         hp = hpMax;
+        state = State.IDLE;
     }
 
     /**
@@ -158,7 +159,7 @@ public class Hero extends GameCharacter {
     public void update(float dt) {
         super.update(dt);
         sleepTimer += dt;
-        stateTimer -= dt;
+        //stateTimer -= dt;
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
             for (int i = 0; i < gc.getMonstersController().getActiveList().size(); i++) {
                 Monster m = gc.getMonstersController().getActiveList().get(i);
@@ -176,48 +177,55 @@ public class Hero extends GameCharacter {
         //если вермя ожидания вышло или нас атаковали то:
         } else if (sleepTimer > 0 ) { //|| lastAttacker != null || state != State.MOVE
             //включаем состояние АТАКИ если не убегаем и если уже не находимся в этом статусе:
+            //System.out.println("AUTO ON "+ state);
             if (state != State.RETREAT && state != State.ATTACK) {
                 //если нас атаковали и в зоне видимости то атакуем в ответ:
                 if (lastAttacker != null && this.position.dst(lastAttacker.getPosition()) < visionRadius) {
                     state = State.ATTACK;
+                    System.out.println("lastAttacker != null "+ state);
                     target = lastAttacker;
                     //иначе сами проверяем есть ли рядом монстр:
                 }else if (gc.getMonstersController().checkVisionMonster(this)) {
                     //target назначается в методе проверки есил вернули тру
                     state = State.ATTACK;
+                    System.out.println("checkVisionMonster( "+ state);
                 }
-            } //если целей рядом нет то можно попробовать поправить здоровье:
-            // стостояние УБЕГАТЬ, осталось мало жизней TODO бегать за сердцами
-//            if (hp < hpMax * 0.2 && state != State.RETREAT) {
-//                state = State.RETREAT;
-//                stateTimer = 1.0f;
-//                Vector2 healthPosition = new Vector2(gc.getBonusController().checkPositionHealthInActiveElement(this));
-//                if(healthPosition.dst(this.getPosition())>10.0f){
-//                    dst.set(healthPosition);
-//                }else{
-//                    dst.set(position.x + MathUtils.random(100, 200) * Math.signum(position.x - lastAttacker.position.x),
-//                            position.y + MathUtils.random(100, 200) * Math.signum(position.y - lastAttacker.position.y));
-//                }
-//            } Bonus.Type.HEALTH
-
+            }
+            // стостояние УБЕГАТЬ, осталось мало жизней
+            if (hp < hpMax * 0.2 && state != State.RETREAT) {
+                state = State.RETREAT;
+                //stateTimer = 1.0f;
+                Vector2 healthPosition = new Vector2(gc.getBonusController().checkPositionBonus(this, Bonus.Type.HEALTH));
+                if(healthPosition.dst(this.getPosition())>10.0f){
+                    dst.set(healthPosition);
+                    System.out.println("dst.set(healthPosition) "+ state);
+                }else{
+                    System.out.println("Math.signum(position.x - lastAttacker.position.x "+ state);
+                    dst.set(position.x + MathUtils.random(100, 200) * Math.signum(position.x - lastAttacker.position.x),
+                            position.y + MathUtils.random(100, 200) * Math.signum(position.y - lastAttacker.position.y));
+                }
+            }
             //если здоровье не целое и на карте есть сердца:
             tmp = gc.getBonusController().checkPositionBonus(this, Bonus.Type.HEALTH);
             if (!tmp.epsilonEquals(position, 0.1f) && hp != hpMax) { //если точка вернулась совем НЕ рядом, и здоровье не =МАКС - значит бежим за сердцем!
                 state = State.MOVE;
+                System.out.println("Bonus.Type.HEALTH "+ state);
                 dst.set(tmp);
             }else {
                 //проверяем нет ли на карте монеток:
                 tmp2 = gc.getBonusController().checkPositionBonus(this, Bonus.Type.COINS);
                 if (!tmp2.epsilonEquals(position, 0.1f) ) { //если точка вернулась совем НЕ рядом, значит бежим за монетками!
                     state = State.MOVE;
+                    System.out.println("Bonus.Type.COINS "+ state);
                     dst.set(tmp2);
                 } else {
+                    //System.out.println("EMPTY "+ state);
                     //если точка вернулась рядом, значит делать нечего - бродяжничаем!
 //                    state = State.values()[MathUtils.random(0, 1)]; //либо постоять либо пойти
 //                        if (state == State.MOVE) {
 //                            dst.set(MathUtils.random(1280), MathUtils.random(720));
 //                        }
-//                    sleepTimer = MathUtils.random(-1.0f, -3.0f); //либо идти либо стоять рандомное время
+//                    stateTimer = MathUtils.random(-1.0f, -3.0f); //либо идти либо стоять рандомное время
                 }
             }
         }

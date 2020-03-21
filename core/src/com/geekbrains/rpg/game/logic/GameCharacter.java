@@ -331,7 +331,7 @@ public abstract class GameCharacter implements MapElement {
         state = State.IDLE;
         System.out.println(" reset target= "+this.target.name);
         target = null;
-        lastAttacker = null;
+        //lastAttacker = null;
         System.out.println(" reset target- "+this.name);
     }
 
