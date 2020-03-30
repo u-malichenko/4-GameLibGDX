@@ -1,7 +1,10 @@
 package com.geekbrains.rpg.game.logic;
 
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.geekbrains.rpg.game.logic.utils.MapElement;
 import com.geekbrains.rpg.game.screens.utils.Assets;
@@ -51,26 +54,33 @@ public abstract class GameCharacter implements MapElement {
 
     protected Circle area;
 
-    protected int name;
+    private StringBuilder strBuilder;
 
     protected float lifetime;
     protected float attackTime;
     protected float walkTime; //таймер для анимации
     protected float timePerFrame;  //скорость смены кадра анимации
-
     protected float visionRadius;
     protected float speed;
+    protected float damageTimer;
+
     protected int coins;
     protected int hp, hpMax;
+    protected int name;
 
     protected Weapon weapon; //каждый персонаж владеет только 1 оружием оружие делается в конструкторе каждого персонада отдельно сами они его вояют
 
-    public int getCellX() {
-        return (int) position.x / 80;
+    @Override
+    public float getY() {
+        return position.y;
     }
 
+    public int getCellX() {
+        return (int) (position.x / Map.CELL_WIDTH);
+    }//позицию делим на размер клетки
+
     public int getCellY() {
-        return (int) (position.y - 20) / 80;
+        return (int) (position.y / Map.CELL_HEIGHT);
     }
 
     public int getCoins() {
@@ -110,14 +120,14 @@ public abstract class GameCharacter implements MapElement {
         if (position.x < 0.1f) {
             position.x = 0.1f;
         }
-        if (position.y - 20 < 0.1f) { //-20 так как рассчитываем все для позиции ног
-            position.y = 20.1f;
+        if (position.y < 0.1f) {
+            position.y = 0.1f;
         }
         if (position.x > Map.MAP_CELLS_WIDTH * 80 - 1) {
             position.x = Map.MAP_CELLS_WIDTH * 80 - 1;
         }
-        if (position.y - 20 > Map.MAP_CELLS_HEIGHT * 80 - 1) {
-            position.y = Map.MAP_CELLS_HEIGHT * 80 - 1 + 20;
+        if (position.y > Map.MAP_CELLS_HEIGHT * 80 - 1) {
+            position.y = Map.MAP_CELLS_HEIGHT * 80 - 1;
         }
         area.setPosition(position.x, position.y - 20);
     }
@@ -165,6 +175,7 @@ public abstract class GameCharacter implements MapElement {
         this.timePerFrame = 0.2f; //скорость смены кадра анимации
         this.target = null;
         this.name = ++count;
+        this.strBuilder = new StringBuilder();
     }
 
     /**
@@ -214,6 +225,10 @@ public abstract class GameCharacter implements MapElement {
      */
     public void update(float dt) {
         lifetime += dt;
+        damageTimer -=dt; //таймер для отрисовки состояния повреждения
+        if(damageTimer <0.0f){
+            damageTimer = 0.0f;
+        }
         //ЕСЛИ ТЫ В СТОСТОЯНИ АТАКИ:
         if (state == State.ATTACK) {
             dst.set(target.getPosition()); //установим дст в цель
@@ -231,12 +246,12 @@ public abstract class GameCharacter implements MapElement {
                 attackTime = 0.0f;
                 if (weapon.getType() == Weapon.Type.MELEE && target != null) { //наносим урон без прожектиля, если оружие в руках для ближнего боя =
                     target.takeDamage(this, weapon.generateDamage());
-                }else
-                if (weapon.getType() == Weapon.Type.RANGED && target != null) { // стреляем прожектилем, если оружие в руках = дальнобойное и цель еще есть
+                } else if (weapon.getType() == Weapon.Type.RANGED && target != null) { // стреляем прожектилем, если оружие в руках = дальнобойное и цель еще есть
                     gc.getProjectilesController().setup(this, position.x, position.y, target.getPosition().x, target.getPosition().y, weapon.generateDamage());
                 }
             }
         }
+        slideFromWall(dt);
     }
 
 
@@ -312,12 +327,23 @@ public abstract class GameCharacter implements MapElement {
     public boolean takeDamage(GameCharacter attacker, int amount) {
         lastAttacker = attacker;
         hp -= amount;
+        damageTimer+=0.4f;
+        if (damageTimer>1.0f){
+            damageTimer=1.0f;
+        }
         if (hp <= 0) {
-            System.out.println("death = "+this.name);
+            System.out.println("death = " + this.name);
             onDeath();
             return true;
         }
         return false;
+    }
+
+    public void slideFromWall(float dt) {
+        if (!gc.getMap().isGroundPassable(position)) {
+            tmp.set(position).sub(getCellX() * Map.CELL_WIDTH + Map.CELL_WIDTH / 2, getCellY() * Map.CELL_HEIGHT + Map.CELL_HEIGHT / 2).nor().scl(60.0f);
+            changePosition(position.x + tmp.x*dt, position.y + tmp.y*dt);
+        }
     }
 
     /**
@@ -329,10 +355,10 @@ public abstract class GameCharacter implements MapElement {
     public void resetAttackState() {
         dst.set(position);
         state = State.IDLE;
-        System.out.println(" reset target= "+this.target.name);
+        System.out.println(" reset target= " + this.target.name);
         target = null;
-        //lastAttacker = null;
-        System.out.println(" reset target- "+this.name);
+        lastAttacker = null;
+        System.out.println(" reset target- " + this.name);
     }
 
     /**
@@ -347,12 +373,70 @@ public abstract class GameCharacter implements MapElement {
      * gameCharacter.resetAttackState();
      */
     public void onDeath() {
+        System.out.println("this = " + this.name);
         for (int i = 0; i < gc.getAllCharacters().size(); i++) {
             GameCharacter gameCharacter = gc.getAllCharacters().get(i);
-            System.out.println(gameCharacter.name);
+            System.out.println("gameCharacter = " + gameCharacter.name);
             if (gameCharacter.target == this) {
                 gameCharacter.resetAttackState();
             }
         }
+    }
+
+    /**
+     * рисуем текстуру индекс картнки берем в методом из GameCharacter
+     * batch.draw(textures[0][getCurrentFrameIndex()], position.x -
+     * //для разворота анимации: так же нужно делать и в герое
+     * если наш персонаж идет вправо:
+     * if (dst.x > position.x){ , точка dst назначения справа
+     * if(currentRegion.isFlipX()){ /и уже он флипнут по х а наш регион сейчас отзеркален
+     * currentRegion.flip(true,false);//разворот x развернись и ссмотри вправо
+     * }else { иначе если надо идти влево
+     * иначе        if(!currentRegion.isFlipX()){ //и он НЕ флипнут по х а он не отзеркален влевую сторону
+     * currentRegion.flip(true,false); //флипаем по х отзеркаливаем
+     * <p>
+     * textures[0] - отвечает за строки массива где должны лежать разне анимации - удар отскок и прочие ее нужно меннять в зависимости от действия:
+     * ВИД анаимации:  TextureRegion currentRegion = textures[0][getCurrentFrameIndex()];
+     * <p>
+     * прячем полоску здоровья если она целая:
+     * if(hp<hpMax){
+     * batch.draw(textureHp, position.x - 30, position.y + 30, 60 * ((float) hp / hpMax), 12);
+     *
+     * @param batch
+     * @param font
+     */
+    @Override
+    public void render(SpriteBatch batch, BitmapFont font) {
+        TextureRegion currentRegion = textures[0][getCurrentFrameIndex()];
+        //для разворота анимации:
+        if (dst.x > position.x) {
+            if (currentRegion.isFlipX()) {
+                currentRegion.flip(true, false);
+            }
+        } else {
+            if (!currentRegion.isFlipX()) {
+                currentRegion.flip(true, false);
+            }
+        }
+        batch.setColor(1.0f,1.0f-damageTimer,1.0f-damageTimer,1.0f);//рисуем в соответствии с поражением его фон
+        batch.draw(currentRegion, position.x - 30, position.y - 15, 30, 30, 60, 60, 1, 1, 0);
+        batch.setColor(1.0f,1.0f,1.0f,1.0f);
+
+        batch.setColor(0.2f,0.2f,0.2f,1.0f);
+        batch.draw(textureHp,position.x-32,position.y+28,64,14); //рисуем черную полоску пол полоской жизни - подложку
+
+        float n = (float)hp/hpMax; //длинна полоски в зависимости от количества оставшейся жизни
+        float shock = damageTimer*5.0f; //чем больше урон тем сильнее тряска
+
+        batch.setColor(1.0f-n,n,0.0f,1.0f);//переход цвета полоски от зеленого к  красному
+        batch.draw(textureHp, position.x - 30+MathUtils.random(-shock,shock), position.y + 30+MathUtils.random(-shock,shock), 60 * ((float) hp / hpMax), 10);
+        batch.setColor(1.0f,1.0f,1.0f,1.0f);
+        font.draw(batch,String.valueOf(hp),position.x-30+MathUtils.random(-shock,shock),position.y+42+MathUtils.random(-shock,shock),60,1,false);
+       // if (hp < hpMax) {
+//            batch.draw(textureHp, position.x - 30, position.y + 45, 60 * ((float) hp / hpMax), 12);
+//            strBuilder.setLength(0);
+//            strBuilder.append(hp).append("\n");
+//            font.draw(batch, strBuilder, position.x - 30, position.y+57);
+        //}
     }
 }

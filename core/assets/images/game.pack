@@ -3,114 +3,128 @@ images1.png
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-wall
-  rotate: false
-  xy: 2, 2
-  size: 80, 120
-  orig: 80, 120
-  offset: 0, 0
-  index: -1
-simpleButton
-  rotate: false
-  xy: 84, 2
-  size: 320, 80
-  orig: 320, 80
-  offset: 0, 0
-  index: -1
-shortButton
-  rotate: false
-  xy: 2, 124
-  size: 80, 80
-  orig: 80, 80
-  offset: 0, 0
-  index: -1
-grass
-  rotate: false
-  xy: 84, 84
-  size: 80, 80
-  orig: 80, 80
-  offset: 0, 0
-  index: -1
-weaponRanged
-  rotate: false
-  xy: 84, 166
-  size: 64, 64
-  orig: 64, 64
-  offset: 0, 0
-  index: -1
-weaponMelee
-  rotate: false
-  xy: 166, 84
-  size: 64, 64
-  orig: 64, 64
-  offset: 0, 0
-  index: -1
-pointer
-  rotate: false
-  xy: 166, 150
-  size: 64, 64
-  orig: 64, 64
-  offset: 0, 0
-  index: -1
 heart60
   rotate: false
-  xy: 406, 2
+  xy: 2, 2
   size: 600, 60
   orig: 600, 60
   offset: 0, 0
   index: -1
 coin60
   rotate: false
-  xy: 406, 64
+  xy: 2, 64
   size: 600, 60
   orig: 600, 60
   offset: 0, 0
   index: -1
+trees
+  rotate: false
+  xy: 2, 126
+  size: 560, 120
+  orig: 560, 120
+  offset: 0, 0
+  index: -1
 dwarf60
   rotate: false
-  xy: 406, 126
+  xy: 2, 248
   size: 480, 60
   orig: 480, 60
   offset: 0, 0
   index: -1
 dwarf
   rotate: false
-  xy: 406, 188
+  xy: 2, 310
   size: 480, 60
   orig: 480, 60
   offset: 0, 0
   index: -1
+simpleButton
+  rotate: false
+  xy: 2, 372
+  size: 320, 80
+  orig: 320, 80
+  offset: 0, 0
+  index: -1
+swinganim502
+  rotate: false
+  xy: 604, 64
+  size: 250, 300
+  orig: 250, 300
+  offset: 0, 0
+  index: -1
+smButton
+  rotate: false
+  xy: 604, 2
+  size: 120, 32
+  orig: 120, 32
+  offset: 0, 0
+  index: -1
+shortButton
+  rotate: false
+  xy: 324, 372
+  size: 80, 80
+  orig: 80, 80
+  offset: 0, 0
+  index: -1
+grass
+  rotate: false
+  xy: 406, 372
+  size: 80, 80
+  orig: 80, 80
+  offset: 0, 0
+  index: -1
+weaponRanged
+  rotate: false
+  xy: 488, 372
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+weaponMelee
+  rotate: false
+  xy: 488, 438
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+pointer
+  rotate: false
+  xy: 604, 366
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+powerUps
+  rotate: false
+  xy: 670, 366
+  size: 60, 120
+  orig: 60, 120
+  offset: 0, 0
+  index: -1
 knight
   rotate: false
-  xy: 232, 84
+  xy: 726, 2
   size: 60, 60
   orig: 60, 60
   offset: 0, 0
   index: -1
 arrow
   rotate: false
-  xy: 232, 146
+  xy: 788, 2
   size: 60, 60
   orig: 60, 60
   offset: 0, 0
   index: -1
 apple
   rotate: false
-  xy: 294, 84
+  xy: 850, 2
   size: 60, 60
   orig: 60, 60
   offset: 0, 0
   index: -1
-smButton
-  rotate: false
-  xy: 888, 126
-  size: 120, 32
-  orig: 120, 32
-  offset: 0, 0
-  index: -1
 hp
   rotate: false
-  xy: 2, 206
+  xy: 604, 36
   size: 60, 8
   orig: 60, 8
   offset: 0, 0

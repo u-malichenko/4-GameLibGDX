@@ -31,12 +31,17 @@ public class Bonus implements MapElement, Poolable, Consumable {
 
     @Override
     public int getCellX() {
-        return (int) (position.x / 80);
+        return (int) (position.x / Map.CELL_WIDTH);
     }
 
     @Override
     public int getCellY() {
-        return (int) (position.y / 80);
+        return (int) (position.y / Map.CELL_HEIGHT);
+    }
+
+    @Override
+    public float getY() {
+        return position.y;
     }
 
     public Type getType() {

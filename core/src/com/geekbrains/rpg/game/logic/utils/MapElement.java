@@ -7,4 +7,5 @@ public interface MapElement {
     void render(SpriteBatch batch, BitmapFont font);
     int getCellX();
     int getCellY();
+    float getY();
 }

@@ -1,7 +1,9 @@
 package com.geekbrains.rpg.game.logic;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.geekbrains.rpg.game.screens.ScreenManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +21,8 @@ public class GameController {
     private Map map;
     private Hero hero;
     private Vector2 tmp, tmp2;
+    private Vector2 mouse;
+    private float worldTime;
 
     /**
      * геттер на всех персонажей нужен для GameCharacter.onDeath -сброса у дохлого персонажа состояния атаки у всех остальных
@@ -26,6 +30,14 @@ public class GameController {
      */
     public List<GameCharacter> getAllCharacters() {
         return allCharacters;
+    }
+
+    public float getWorldTime() {
+        return worldTime;
+    }
+
+    public Vector2 getMouse() {
+        return mouse;
     }
 
     public Hero getHero() {
@@ -71,6 +83,7 @@ public class GameController {
         this.monstersController = new MonstersController(this, 5);
         this.tmp = new Vector2(0, 0);
         this.tmp2 = new Vector2(0, 0);
+        this.mouse = new Vector2(0, 0);
     }
 
     /**
@@ -89,13 +102,17 @@ public class GameController {
      * @param dt
      */
     public void update(float dt) {
+        mouse.set(Gdx.input.getX(),Gdx.input.getY()); //в мышку зашиваем координаты х у
+        ScreenManager.getInstance().getViewport().unproject(mouse); // преобразует мышинные координаты в мировые координаты проецирует на карту
+        worldTime +=dt;
         allCharacters.clear();
 
         allCharacters.add(hero);
         allCharacters.addAll(monstersController.getActiveList());
 
-        hero.update(dt);
         monstersController.update(dt);
+        hero.update(dt);
+
         checkCollisions();
         projectilesController.update(dt);
         weaponsController.update(dt);

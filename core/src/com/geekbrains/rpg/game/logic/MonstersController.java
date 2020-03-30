@@ -38,7 +38,7 @@ public class MonstersController extends ObjectPool<Monster> {
      */
     public MonstersController(GameController gc, int initialCount) {
         this.gc = gc;
-        this.spawnPeriod = 10.0f;
+        this.spawnPeriod = 15.0f;
         for (int i = 0; i < initialCount; i++) {
             getActiveElement().generateMe();
         }

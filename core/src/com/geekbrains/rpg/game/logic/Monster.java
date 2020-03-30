@@ -118,27 +118,27 @@ public class Monster extends GameCharacter implements Poolable {
      * @param batch
      * @param font
      */
-    @Override
-    public void render(SpriteBatch batch, BitmapFont font) {
-        TextureRegion currentRegion = textures[0][getCurrentFrameIndex()];
-        //для разворота анимации:
-        if (dst.x > position.x) {
-            if (currentRegion.isFlipX()) {
-                currentRegion.flip(true, false);
-            }
-        } else {
-            if (!currentRegion.isFlipX()) {
-                currentRegion.flip(true, false);
-            }
-        }
-        batch.draw(currentRegion, position.x - 30, position.y - 30, 30, 30, 60, 60, 2, 2, 0);
-        if (hp < hpMax) {
-            batch.draw(textureHp, position.x - 30, position.y + 30, 60 * ((float) hp / hpMax), 12);
-            strBuilder.setLength(0);
-            strBuilder.append(hp).append("\n");
-            font.draw(batch, strBuilder, position.x - 30, position.y+42);
-        }
-    }
+//    @Override
+//    public void render(SpriteBatch batch, BitmapFont font) {
+//        TextureRegion currentRegion = textures[0][getCurrentFrameIndex()];
+//        //для разворота анимации:
+//        if (dst.x > position.x) {
+//            if (currentRegion.isFlipX()) {
+//                currentRegion.flip(true, false);
+//            }
+//        } else {
+//            if (!currentRegion.isFlipX()) {
+//                currentRegion.flip(true, false);
+//            }
+//        }
+//        batch.draw(currentRegion, position.x - 30, position.y - 15, 30, 30, 60, 60, 2, 2, 0);
+//        if (hp < hpMax) {
+//            batch.draw(textureHp, position.x - 30, position.y + 30, 60 * ((float) hp / hpMax), 12);
+//            strBuilder.setLength(0);
+//            strBuilder.append(hp).append("\n");
+//            font.draw(batch, strBuilder, position.x - 30, position.y+42);
+//        }
+//    }
 
     /**
      * в ПЕрсонажах будут правила смены состояний а то как эти состояния обрабатываются будут в базовом классе(GameCharacter)

@@ -31,13 +31,18 @@ public class Projectile implements Poolable, MapElement {
     }
 
     @Override
+    public float getY() {
+        return position.y;
+    }
+
+    @Override
     public int getCellX() {
-        return (int) position.x / 80;
+        return (int) position.x / Map.CELL_WIDTH;
     }
 
     @Override
     public int getCellY() {
-        return (int) position.y / 80;
+        return (int) position.y / Map.CELL_HEIGHT;
     }
 
     public Vector2 getPosition() {
