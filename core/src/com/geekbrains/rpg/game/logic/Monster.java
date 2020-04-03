@@ -49,18 +49,13 @@ public class Monster extends GameCharacter implements Poolable {
      * @param gc
      */
     public Monster(GameController gc) {
-        super(gc, 20, 100.0f);
+        super(gc, 20, 80.0f);
         this.textures = new TextureRegion(Assets.getInstance().getAtlas().findRegion("dwarf")).split(60, 60);
         this.changePosition(800.0f, 300.0f);
         this.dst.set(this.position);
         this.visionRadius = 160.0f;
         this.strBuilder = new StringBuilder();
-        if (MathUtils.random(100) < 50) {
-            this.weapon = Weapon.createSimpleRangedWeapon();
-        } else {
-            this.weapon = Weapon.createSimpleMeleeWeapon();
-        }
-
+        this.weapon = gc.getWeaponsController().getOneFromAnyPrototype();
     }
 
     /**
@@ -89,57 +84,14 @@ public class Monster extends GameCharacter implements Poolable {
     @Override
     public void onDeath() {
         super.onDeath();
+        //gc.getWeaponsController().setup(position.x, position.y);
+        gc.getPowerUpController().setup(position.x, position.y);
         if (MathUtils.random(100) < 50) {
             gc.getBonusController().setup(position.x, position.y, this.getCoins());
         } else {
             gc.getWeaponsController().setup(position.x, position.y);
         }
     }
-
-    /**
-     * рисуем текстуру индекс картнки берем в методом из GameCharacter
-     * batch.draw(textures[0][getCurrentFrameIndex()], position.x -
-     * //для разворота анимации: так же нужно делать и в герое
-     * если наш персонаж идет вправо:
-     * if (dst.x > position.x){ , точка dst назначения справа
-     * if(currentRegion.isFlipX()){ /и уже он флипнут по х а наш регион сейчас отзеркален
-     * currentRegion.flip(true,false);//разворот x развернись и ссмотри вправо
-     * }else { иначе если надо идти влево
-     * иначе        if(!currentRegion.isFlipX()){ //и он НЕ флипнут по х а он не отзеркален влевую сторону
-     * currentRegion.flip(true,false); //флипаем по х отзеркаливаем
-     * <p>
-     * textures[0] - отвечает за строки массива где должны лежать разне анимации - удар отскок и прочие ее нужно меннять в зависимости от действия:
-     * ВИД анаимации:  TextureRegion currentRegion = textures[0][getCurrentFrameIndex()];
-     * <p>
-     * прячем полоску здоровья если она целая:
-     * if(hp<hpMax){
-     * batch.draw(textureHp, position.x - 30, position.y + 30, 60 * ((float) hp / hpMax), 12);
-     *
-     * @param batch
-     * @param font
-     */
-//    @Override
-//    public void render(SpriteBatch batch, BitmapFont font) {
-//        TextureRegion currentRegion = textures[0][getCurrentFrameIndex()];
-//        //для разворота анимации:
-//        if (dst.x > position.x) {
-//            if (currentRegion.isFlipX()) {
-//                currentRegion.flip(true, false);
-//            }
-//        } else {
-//            if (!currentRegion.isFlipX()) {
-//                currentRegion.flip(true, false);
-//            }
-//        }
-//        batch.draw(currentRegion, position.x - 30, position.y - 15, 30, 30, 60, 60, 2, 2, 0);
-//        if (hp < hpMax) {
-//            batch.draw(textureHp, position.x - 30, position.y + 30, 60 * ((float) hp / hpMax), 12);
-//            strBuilder.setLength(0);
-//            strBuilder.append(hp).append("\n");
-//            font.draw(batch, strBuilder, position.x - 30, position.y+42);
-//        }
-//    }
-
     /**
      * в ПЕрсонажах будут правила смены состояний а то как эти состояния обрабатываются будут в базовом классе(GameCharacter)
      * тоесть по сути и герои и монстры ведут себя одинаково а как меняются их состояния зависит либо от мозгов бота либо от нашей мышки

@@ -81,7 +81,7 @@ public class ScreenManager {
     }
 
     /**
-     * сбрасывает камеру - при переходе в меню
+     * сбрасывает камеру - при переходе в меню координаты рисуются относительно экрна а не относительно героя(нацеливания)
      */
     public void resetCamera() {
         camera.position.set(HALF_WORLD_WIDTH, HALF_WORLD_HEIGHT, 0);
@@ -91,7 +91,7 @@ public class ScreenManager {
     }
 
     /**
-     * выставляет камеру в нужную точку
+     * выставляет камеру в нужную точку нацеливание
      * @param position
      */
     public void pointCameraTo(Vector2 position){

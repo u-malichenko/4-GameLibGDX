@@ -20,8 +20,8 @@ public class Map {
             isAirPassable = false;
         }
     }
-    public static final int MAP_CELLS_WIDTH = 16;
-    public static final int MAP_CELLS_HEIGHT = 12;
+    public static final int MAP_CELLS_WIDTH = 24;
+    public static final int MAP_CELLS_HEIGHT = 16;
     public static final int CELL_WIDTH = 80;
     public static final int CELL_HEIGHT = 60;
 
@@ -29,6 +29,19 @@ public class Map {
     private byte[][] dataIndex;
     private TextureRegion grassTexture;
     private TextureRegion[] obstaclesTexture;
+
+    /**
+     * какой размер карты по х предел по ширине и следом по высоте
+     * колличество клеток по х умноженное на длянну ячейки
+     * @return
+     */
+    public int getWidthLimit (){
+        return MAP_CELLS_WIDTH*CELL_WIDTH;
+    }
+
+    public int getHeightLimit (){
+        return MAP_CELLS_HEIGHT*CELL_HEIGHT;
+    }
 
     public boolean isAirPassable(int cellX, int cellY) {
         return data[cellX][cellY] == null || data[cellX][cellY].isAirPassable;//если тру то стрела може пролететь

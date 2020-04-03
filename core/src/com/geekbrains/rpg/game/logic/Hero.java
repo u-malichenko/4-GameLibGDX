@@ -10,7 +10,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.geekbrains.rpg.game.screens.utils.Assets;
 
 public class Hero extends GameCharacter {
-    private TextureRegion texturePointer;
     private StringBuilder strBuilder;
     private float sleepTimer;
 
@@ -31,37 +30,16 @@ public class Hero extends GameCharacter {
      * @param gc
      */
     public Hero(GameController gc) {
-        super(gc, 80, 300.0f);
+        super(gc, 80, 120.0f);
         this.textures = new TextureRegion(Assets.getInstance().getAtlas().findRegion("knight")).split(60, 60);
-        this.texturePointer = Assets.getInstance().getAtlas().findRegion("pointer");
         this.changePosition(100.0f, 100.0f);
         this.dst.set(position);
         this.strBuilder = new StringBuilder();
-        this.weapon = Weapon.createSimpleMeleeWeapon();
+        this.weapon = gc.getWeaponsController().getOneFromAnyPrototype();
         this.visionRadius = 170.0f;
         this.sleepTimer = 0;
 
     }
-
-    /**
-     * * рисуем текстуру индекс картнки берем в методом из GameCharacter, анимация из 1 кадра
-     * * batch.draw(textures[0][getCurrentFrameIndex()], position.x -
-     *
-     * @param batch
-     * @param font
-     */
-//    @Override
-//    public void render(SpriteBatch batch, BitmapFont font) {
-//        batch.draw(texturePointer, dst.x - 30, dst.y - 30, 30, 30, 60, 60, 0.5f, 0.5f, lifetime * 90.0f);
-//        batch.draw(textures[0][getCurrentFrameIndex()], position.x - 30, position.y - 15, 30, 30, 60, 60, 1, 1, 0);
-//        //position.y - 15 - нижний левый край смещаем на 15 вниз
-//        if (hp < hpMax) {
-//            batch.draw(textureHp, position.x - 30, position.y + 30, 60 * ((float) hp / hpMax), 12);
-//            strBuilder.setLength(0);
-//            strBuilder.append(hp).append("\n");
-//            font.draw(batch, strBuilder, position.x - 30, position.y+42);
-//        }
-//    }
 
     public void renderGUI(SpriteBatch batch, BitmapFont font) {
         strBuilder.setLength(0);

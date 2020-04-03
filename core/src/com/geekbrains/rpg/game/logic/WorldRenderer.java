@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.Vector2;
 import com.geekbrains.rpg.game.logic.utils.MapElement;
 import com.geekbrains.rpg.game.screens.ScreenManager;
 import com.geekbrains.rpg.game.screens.utils.Assets;
@@ -23,6 +24,7 @@ public class WorldRenderer {
     private BitmapFont font10;
     private List<MapElement>[] drawables;
     private Comparator<MapElement> yComparator;
+    private Vector2 pov;
 
     private FrameBuffer frameBuffer; // буфер где ве отрисовываем
     private TextureRegion frameBufferRegion;
@@ -32,6 +34,7 @@ public class WorldRenderer {
         this.gc = gameController;
         this.font10 = Assets.getInstance().getAssetManager().get("fonts/font10.ttf");
         this.batch = batch;
+        this.pov = new Vector2(0, 0);
         this.drawables = new ArrayList[Map.MAP_CELLS_HEIGHT];
         for (int i = 0; i < drawables.length; i++) {
             drawables[i] = new ArrayList<>();
@@ -39,29 +42,44 @@ public class WorldRenderer {
         yComparator = new Comparator<MapElement>() {
             @Override
             public int compare(MapElement o1, MapElement o2) {
-                return (int)(o2.getY()-o1.getY());//чем персонаж выше тем раньше будет отрисован
+                return (int) (o2.getY() - o1.getY());//чем персонаж выше тем раньше будет отрисован
             }
         };
-        this.frameBuffer = new FrameBuffer(Pixmap.Format.RGB888, ScreenManager.WORLD_WIDTH,ScreenManager.WORLD_HEIGHT,false); //создаем буфер
+        this.frameBuffer = new FrameBuffer(Pixmap.Format.RGB888, ScreenManager.WORLD_WIDTH, ScreenManager.WORLD_HEIGHT, false); //создаем буфер
         this.frameBufferRegion = new TextureRegion(frameBuffer.getColorBufferTexture());//назначаем регион
-        this.frameBufferRegion.flip(false,true);// оказывается перевернут и поэтому сами делаем флип
+        this.frameBufferRegion.flip(false, true);// оказывается перевернут и поэтому сами делаем флип
         this.shaderProgram = new ShaderProgram(Gdx.files.internal("shaders/vertex.glsl").readString(), Gdx.files.internal("shaders/fragment.glsl").readString());
         //создали шейдерную программу из двух шейдеров - вершинный и фрагментный указали пути к ним
-        if(!shaderProgram.isCompiled()){ //выполняем компиляцию шейдера если ошибка то выбрасываем исключение:
-            throw new IllegalArgumentException("Error compiling shader "+ shaderProgram.getLog());
+        if (!shaderProgram.isCompiled()) { //выполняем компиляцию шейдера если ошибка то выбрасываем исключение:
+            throw new IllegalArgumentException("Error compiling shader " + shaderProgram.getLog());
         }
     }
 
     /**
      * запускаем цикл и говорим что у нас много АКТИВНЫХ монстров:
-     *         for (int i = 0; i < gc.getMonstersController().getActiveList().size(); i++) {
-     *             Monster m = gc.getMonstersController().getActiveList().get(i); //это ссылка! локальная в стеке
-     *             drawables[m.getCellY()].add(m);
+     * for (int i = 0; i < gc.getMonstersController().getActiveList().size(); i++) {
+     * Monster m = gc.getMonstersController().getActiveList().get(i); //это ссылка! локальная в стеке
+     * drawables[m.getCellY()].add(m);
      */
     public void render() {
-        //рисуем в буфер:
-        ScreenManager.getInstance().pointCameraTo(gc.getHero().position); //нацеливаем камеру на гнроя
+        //чтоб камера не вылезала за края карты
+        pov.set(gc.getHero().getPosition());//прицеливаемся в игрока
+        if (pov.x < ScreenManager.HALF_WORLD_WIDTH) { //если меньше половины экрана
+            pov.x = ScreenManager.HALF_WORLD_WIDTH; //не моет заглядывать за границы экрана
+        }
+        if (pov.y < ScreenManager.HALF_WORLD_HEIGHT) {
+            pov.y = ScreenManager.HALF_WORLD_HEIGHT;
+        }
+        if (pov.x > gc.getMap().getWidthLimit() - ScreenManager.HALF_WORLD_WIDTH) { //если меньше половины экрана
+            pov.x = gc.getMap().getWidthLimit() - ScreenManager.HALF_WORLD_WIDTH; //не моет заглядывать за границы экрана
+        }
+        if (pov.y > gc.getMap().getHeightLimit() - ScreenManager.HALF_WORLD_HEIGHT) {
+            pov.y = gc.getMap().getHeightLimit() - ScreenManager.HALF_WORLD_HEIGHT;
+        }
+        ScreenManager.getInstance().pointCameraTo(pov); //нацеливаем камеру на tmp = hero if size screen not /2 переместили камеру на игрока
+        //рисуем МИР в буфер
 
+        //чистим объекты отрисовки:
         for (int i = 0; i < drawables.length; i++) {
             drawables[i].clear();
         }
@@ -83,12 +101,16 @@ public class WorldRenderer {
             Weapon w = gc.getWeaponsController().getActiveList().get(i);
             drawables[w.getCellY()].add(w);
         }
+        //отрисовка поверапсов:
+        for (int i = 0; i < gc.getPowerUpController().getActiveList().size(); i++) {
+            PowerUp p = gc.getPowerUpController().getActiveList().get(i);
+            drawables[p.getCellY()].add(p);
+        }
         //отрисовка бонусов:
         for (int i = 0; i < gc.getBonusController().getActiveList().size(); i++) {
             Bonus bonus = gc.getBonusController().getActiveList().get(i);
             drawables[bonus.getCellY()].add(bonus);
         }
-
         //сортировка по приближению
         for (int i = 0; i < drawables.length; i++) {
             Collections.sort(drawables[i], yComparator);
@@ -114,22 +136,23 @@ public class WorldRenderer {
                 gc.getMap().renderUpper(batch, x, y);
             }
         }
+        gc.getSpecialEffectsController().render(batch); //отрисовка анамации ударов, поверх всего
         batch.end();
-        frameBuffer.end();//закончили с буфером
+        frameBuffer.end();//закончили с буфером отрисокой МИРА
+
         //рисуем на экран:
         // сбросить камеру и сказать чтоб она смотрела в центр экрана:
         ScreenManager.getInstance().resetCamera(); //сбрасываем камеру
 
-        //после всего, рисуем весь кадр:
+        //после всего, рисуем весь 1! кадр:
         batch.begin(); //вывод на экран с использованием шейдера
         batch.setShader(shaderProgram); //устонавливаем при отрисовке шейдкрную программу - активировать шецйдер
-        shaderProgram.setUniformf(shaderProgram.getUniformLocation("time"),gc.getWorldTime()); //пробрасываем переменные в шейдер
-        shaderProgram.setUniformf(shaderProgram.getUniformLocation("px"), 640.0f,1280.0f);
-        shaderProgram.setUniformf(shaderProgram.getUniformLocation("py"),360.0f,720.0f);
+        shaderProgram.setUniformf(shaderProgram.getUniformLocation("time"), gc.getWorldTime()); //пробрасываем переменные в шейдер
+        shaderProgram.setUniformf(shaderProgram.getUniformLocation("px"), pov.x, 1280.0f);
+        shaderProgram.setUniformf(shaderProgram.getUniformLocation("py"), pov.y, 720.0f);
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        batch.draw(frameBufferRegion,0,0);//нарисовали фрейм буфер
-
+        batch.draw(frameBufferRegion, 0, 0);//нарисовали фрейм буфер
         batch.end();
         batch.setShader(null); //деактивируем шейдер
 
@@ -137,6 +160,6 @@ public class WorldRenderer {
         gc.getHero().renderGUI(batch, font10);
         batch.end();
 
-        ScreenManager.getInstance().pointCameraTo(gc.getHero().position); //нацеливаем камеру на гнроя
+        ScreenManager.getInstance().pointCameraTo(pov); //возвращаем камеру к герою чтоб мышка счтала координаты относительно героя
     }
 }

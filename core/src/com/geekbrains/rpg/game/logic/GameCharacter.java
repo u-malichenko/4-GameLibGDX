@@ -88,12 +88,11 @@ public abstract class GameCharacter implements MapElement {
     }
 
     /**
-     * метод установить подобранное оружие
+     * метод получить оружие персонажа, используется для замены его свойств при поднятии
      *
-     * @param weapon
      */
-    public void setWeapon(Weapon weapon) {
-        this.weapon = weapon;
+    public Weapon getWeapon() {
+        return weapon;
     }
 
     public void setHealth() {
@@ -130,6 +129,14 @@ public abstract class GameCharacter implements MapElement {
             position.y = Map.MAP_CELLS_HEIGHT * 80 - 1;
         }
         area.setPosition(position.x, position.y - 20);
+    }
+
+    public void restoreHP(float persent){
+        int amount = (int)(hpMax*persent);
+        hp +=amount;
+        if (hp>hpMax){
+            hp = hpMax;
+        }
     }
 
     public void changePosition(Vector2 newPosition) {
@@ -245,6 +252,8 @@ public abstract class GameCharacter implements MapElement {
             if (attackTime > weapon.getSpeed()) { //скорость атаки сравниваем с течением времени
                 attackTime = 0.0f;
                 if (weapon.getType() == Weapon.Type.MELEE && target != null) { //наносим урон без прожектиля, если оружие в руках для ближнего боя =
+                    tmp.set(target.position).sub(position); //считаем угол атаки для анимации удара, берем координаты цели вычитаем из них наши координаты, получаем вектор направленный из нас в цел
+                    gc.getSpecialEffectsController().setupSwordSwing(position.x,position.y,tmp.angle());//создаем аннимацию удара
                     target.takeDamage(this, weapon.generateDamage());
                 } else if (weapon.getType() == Weapon.Type.RANGED && target != null) { // стреляем прожектилем, если оружие в руках = дальнобойное и цель еще есть
                     gc.getProjectilesController().setup(this, position.x, position.y, target.getPosition().x, target.getPosition().y, weapon.generateDamage());

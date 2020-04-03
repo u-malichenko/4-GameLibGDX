@@ -13,9 +13,11 @@ import java.util.List;
  * private List<GameCharacter> allCharacters; - список всех персонажей
  */
 public class GameController {
-    private ProjectilesController projectilesController;
+    private ProjectilesController projectilesController;//TODO свернуть все контроллеры в класс контроллер
+    private PowerUpController powerUpController;
     private MonstersController monstersController;
     private WeaponsController weaponsController;
+    private SpecialEffectsController specialEffectsController;
     private BonusController bonusController;
     private List<GameCharacter> allCharacters;
     private Map map;
@@ -24,6 +26,9 @@ public class GameController {
     private Vector2 mouse;
     private float worldTime;
 
+    public PowerUpController getPowerUpController() {
+        return powerUpController;
+    }
     /**
      * геттер на всех персонажей нужен для GameCharacter.onDeath -сброса у дохлого персонажа состояния атаки у всех остальных
      * @return
@@ -31,19 +36,15 @@ public class GameController {
     public List<GameCharacter> getAllCharacters() {
         return allCharacters;
     }
-
     public float getWorldTime() {
         return worldTime;
     }
-
     public Vector2 getMouse() {
         return mouse;
     }
-
     public Hero getHero() {
         return hero;
     }
-
     /**
      * геттер на контроллер монстров
      * @return
@@ -51,23 +52,21 @@ public class GameController {
     public MonstersController getMonstersController() {
         return monstersController;
     }
-
     public Map getMap() {
         return map;
     }
-
     public ProjectilesController getProjectilesController() {
         return projectilesController;
     }
-
     public WeaponsController getWeaponsController() {
         return weaponsController;
     }
-
     public BonusController getBonusController() {
         return bonusController;
     }
-
+    public SpecialEffectsController getSpecialEffectsController() {
+        return specialEffectsController;
+    }
     /**
      * монстр контроллер можно создать только после того как мапа будет готова такак мы там ее используем для проверки залипания:
      * this.monstersController = new MonstersController(this, 5); - передаем туда ссылку на эту игру и колличество монстров в пачке
@@ -75,12 +74,14 @@ public class GameController {
      */
     public GameController() {
         this.allCharacters = new ArrayList<>();
-        this.projectilesController = new ProjectilesController();
+        this.projectilesController = new ProjectilesController(this);
+        this.powerUpController = new PowerUpController(this);
         this.weaponsController = new WeaponsController(this);
         this.bonusController = new BonusController(this);
         this.hero = new Hero(this);
         this.map = new Map();
-        this.monstersController = new MonstersController(this, 5);
+        this.monstersController = new MonstersController(this, 15);
+        this.specialEffectsController = new SpecialEffectsController();
         this.tmp = new Vector2(0, 0);
         this.tmp2 = new Vector2(0, 0);
         this.mouse = new Vector2(0, 0);
@@ -116,6 +117,8 @@ public class GameController {
         checkCollisions();
         projectilesController.update(dt);
         weaponsController.update(dt);
+        powerUpController.update(dt);
+        specialEffectsController.update(dt);
         bonusController.update(dt);
     }
 
@@ -229,7 +232,7 @@ public class GameController {
                 continue;
             }
             //если снаряд влетел:
-            if (p.getPosition().dst(hero.getPosition()) < 24 && p.getOwner() != hero) {
+            if (p.getPosition().dst(hero.getPosition()) < 18 && p.getOwner() != hero) {
                 p.deactivate();
                 hero.takeDamage(p.getOwner(), p.getDamage());
             }
@@ -241,10 +244,16 @@ public class GameController {
                     continue;
                 }
                 //снаряд может влететь в монстра не хозяина:
-                if (p.getPosition().dst(m.getPosition()) < 24) {
+                if (p.getPosition().dst(m.getPosition()) < 18) {
                     p.deactivate();
                     m.takeDamage(p.getOwner(), p.getDamage());
                 }
+            }
+        }
+        for (int i = 0; i < powerUpController.getActiveList().size(); i++) {
+            PowerUp p = powerUpController.getActiveList().get(i);
+            if (p.getPosition().dst(hero.getPosition()) < 24) {
+                p.consume(hero);
             }
         }
     }
