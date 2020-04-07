@@ -1,5 +1,7 @@
 package com.geekbrains.rpg.game.logic;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -53,8 +55,9 @@ public abstract class GameCharacter implements MapElement {
     protected Vector2 tmp2;
 
     protected Circle area;
+    protected Sound sound;
 
-    private StringBuilder strBuilder;
+    protected StringBuilder strBuilder;
 
     protected float lifetime;
     protected float attackTime;
@@ -131,12 +134,13 @@ public abstract class GameCharacter implements MapElement {
         area.setPosition(position.x, position.y - 20);
     }
 
-    public void restoreHP(float persent){
-        int amount = (int)(hpMax*persent);
-        hp +=amount;
-        if (hp>hpMax){
-            hp = hpMax;
+    public int restoreHP(float percent){
+        int amount = (int)(hpMax*percent);
+        if(hp + amount > hpMax){
+            amount = hpMax - hp;
         }
+        hp +=amount;
+        return amount;
     }
 
     public void changePosition(Vector2 newPosition) {
@@ -183,6 +187,7 @@ public abstract class GameCharacter implements MapElement {
         this.target = null;
         this.name = ++count;
         this.strBuilder = new StringBuilder();
+        this.sound = Gdx.audio.newSound(Gdx.files.internal("audio/explosion.wav"));
     }
 
     /**
@@ -334,6 +339,7 @@ public abstract class GameCharacter implements MapElement {
      * @return
      */
     public boolean takeDamage(GameCharacter attacker, int amount) {
+        sound.play(0.005f);
         lastAttacker = attacker;
         hp -= amount;
         damageTimer+=0.4f;
@@ -341,12 +347,17 @@ public abstract class GameCharacter implements MapElement {
             damageTimer=1.0f;
         }
         if (hp <= 0) {
-            System.out.println("death = " + this.name);
             onDeath();
             return true;
         }
         return false;
     }
+
+
+    public void dispose(){
+        sound.dispose();
+    }
+
 
     public void slideFromWall(float dt) {
         if (!gc.getMap().isGroundPassable(position)) {
@@ -382,10 +393,8 @@ public abstract class GameCharacter implements MapElement {
      * gameCharacter.resetAttackState();
      */
     public void onDeath() {
-        System.out.println("this = " + this.name);
         for (int i = 0; i < gc.getAllCharacters().size(); i++) {
             GameCharacter gameCharacter = gc.getAllCharacters().get(i);
-            System.out.println("gameCharacter = " + gameCharacter.name);
             if (gameCharacter.target == this) {
                 gameCharacter.resetAttackState();
             }

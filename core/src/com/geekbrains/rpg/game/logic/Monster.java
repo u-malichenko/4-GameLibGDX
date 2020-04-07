@@ -1,10 +1,8 @@
 package com.geekbrains.rpg.game.logic;
 
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.geekbrains.rpg.game.logic.utils.Poolable;
 import com.geekbrains.rpg.game.screens.utils.Assets;
 
@@ -21,6 +19,12 @@ import com.geekbrains.rpg.game.screens.utils.Assets;
  */
 public class Monster extends GameCharacter implements Poolable {
     private StringBuilder strBuilder;
+    private MonsterClass monsterClass;
+    private String title;
+
+    public enum MonsterClass {
+        HUMAN, UNDEAD, GOBLIN, DEMON, ELF;
+    }
 
     /**
      * проверка активности монстра исходя из его здоровья
@@ -33,6 +37,12 @@ public class Monster extends GameCharacter implements Poolable {
     public boolean isActive() {
         return hp > 0;
     }
+
+//    @Override
+//    public boolean amISelected() {
+//        return false;
+//    }
+
 
     /**
      * грузим пачку текстур распиливаем текстуру на 8 регионов
@@ -55,7 +65,7 @@ public class Monster extends GameCharacter implements Poolable {
         this.dst.set(this.position);
         this.visionRadius = 160.0f;
         this.strBuilder = new StringBuilder();
-        this.weapon = gc.getWeaponsController().getOneFromAnyPrototype();
+        this.weapon = gc.getWeaponsController().getOneFromAnyPrototype(); //задаем случайное оружие
     }
 
     /**
@@ -84,14 +94,27 @@ public class Monster extends GameCharacter implements Poolable {
     @Override
     public void onDeath() {
         super.onDeath();
-        //gc.getWeaponsController().setup(position.x, position.y);
-        gc.getPowerUpController().setup(position.x, position.y);
+        gc.getPowerUpsController().setup(position.x, position.y);
         if (MathUtils.random(100) < 50) {
             gc.getBonusController().setup(position.x, position.y, this.getCoins());
         } else {
-            gc.getWeaponsController().setup(position.x, position.y);
+            gc.getWeaponsController().setup(position.x, position.y,this.weapon); //создаем выпадающее оружие
         }
     }
+
+    /**
+     * монстр получает уром переопределяем метод для вывода текста урона
+     * @param attacker
+     * @param amount
+     * @return
+     */
+    @Override
+    public boolean takeDamage(GameCharacter attacker, int amount) {
+        gc.getInfoController().setupAnyAmount(position.x, position.y, Color.WHITE, "-", amount);
+        return super.takeDamage(attacker, amount);
+
+    }
+
     /**
      * в ПЕрсонажах будут правила смены состояний а то как эти состояния обрабатываются будут в базовом классе(GameCharacter)
      * тоесть по сути и герои и монстры ведут себя одинаково а как меняются их состояния зависит либо от мозгов бота либо от нашей мышки
@@ -169,8 +192,10 @@ public class Monster extends GameCharacter implements Poolable {
         if (hp < hpMax * 0.2 && state != State.RETREAT) {
             state = State.RETREAT;
             stateTimer = 1.0f;
-            dst.set(position.x + MathUtils.random(100, 200) * Math.signum(position.x - lastAttacker.position.x),
-                    position.y + MathUtils.random(100, 200) * Math.signum(position.y - lastAttacker.position.y));
+            if(lastAttacker!=null) {
+                dst.set(position.x + MathUtils.random(100, 200) * Math.signum(position.x - lastAttacker.position.x),
+                        position.y + MathUtils.random(100, 200) * Math.signum(position.y - lastAttacker.position.y));
+            }
         }
     }
 }

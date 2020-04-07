@@ -18,12 +18,17 @@ public class Map {
             this.scale = MathUtils.random(0.7f,1.4f);
             this.offset = MathUtils.random(-12,12);
             isAirPassable = false;
+            if(this.index ==4 || this.index==6){
+                this.isAirPassable= true; //стрелять над камнями
+            }
         }
     }
-    public static final int MAP_CELLS_WIDTH = 24;
-    public static final int MAP_CELLS_HEIGHT = 16;
+    public static final int MAP_CELLS_WIDTH = 40;
+    public static final int MAP_CELLS_HEIGHT = 32;
+    public static final int OBSTACLES_COUNT = 100;
+
     public static final int CELL_WIDTH = 80;
-    public static final int CELL_HEIGHT = 60;
+    public static final int CELL_HEIGHT = 40;
 
     private Obstacle[][] data;
     private byte[][] dataIndex;
@@ -57,7 +62,7 @@ public class Map {
 
     public Map() {
         this.data = new Obstacle[MAP_CELLS_WIDTH][MAP_CELLS_HEIGHT];
-        for (int i = 0; i < 35; i++) {
+        for (int i = 0; i < OBSTACLES_COUNT; i++) {
             int x = MathUtils.random(MAP_CELLS_WIDTH - 1);
             int y = MathUtils.random(MAP_CELLS_HEIGHT - 1);
             data[x][y] = new Obstacle();

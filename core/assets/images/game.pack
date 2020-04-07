@@ -101,23 +101,51 @@ powerUps
   orig: 60, 120
   offset: 0, 0
   index: -1
-knight
+woodelf
   rotate: false
   xy: 726, 2
   size: 60, 60
   orig: 60, 60
   offset: 0, 0
   index: -1
-arrow
+skeleton
   rotate: false
   xy: 788, 2
   size: 60, 60
   orig: 60, 60
   offset: 0, 0
   index: -1
-apple
+mummy
   rotate: false
   xy: 850, 2
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+knight1
+  rotate: false
+  xy: 912, 2
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+knight
+  rotate: false
+  xy: 484, 248
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+arrow
+  rotate: false
+  xy: 484, 310
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+apple
+  rotate: false
+  xy: 604, 432
   size: 60, 60
   orig: 60, 60
   offset: 0, 0

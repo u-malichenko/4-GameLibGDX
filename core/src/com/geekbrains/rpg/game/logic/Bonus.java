@@ -1,5 +1,6 @@
 package com.geekbrains.rpg.game.logic;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -86,8 +87,11 @@ public class Bonus implements MapElement, Poolable, Consumable {
     @Override
     public void consume(GameCharacter gameCharacter) {
         if (type == Type.HEALTH) {
-            gameCharacter.setHealth();
+            int restored = gameCharacter.restoreHP(0.1f); //востанавливаем здоровье на 10%
+            gc.getInfoController().setupAnyAmount(gameCharacter.getPosition().x, gameCharacter.getPosition().y, Color.GREEN, "+", restored);
         } else {
+            int amount = MathUtils.random(3, 10);
+            gc.getInfoController().setupAnyAmount(gameCharacter.getPosition().x,gameCharacter.getPosition().y, Color.GOLD,"+", amount);
             gameCharacter.addCoins(MathUtils.random(10));
         }
         active = false;

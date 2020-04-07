@@ -2,6 +2,8 @@ package com.geekbrains.rpg.game.logic;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -12,6 +14,7 @@ import com.geekbrains.rpg.game.screens.utils.Assets;
 public class Hero extends GameCharacter {
     private StringBuilder strBuilder;
     private float sleepTimer;
+//    private Sound sound;
 
     /**
      * грузи свою картинку - распиливац ее на блоки 60 на 60 получится двумерныый массив размер будет пока 1 на 1
@@ -35,9 +38,10 @@ public class Hero extends GameCharacter {
         this.changePosition(100.0f, 100.0f);
         this.dst.set(position);
         this.strBuilder = new StringBuilder();
-        this.weapon = gc.getWeaponsController().getOneFromAnyPrototype();
+        this.weapon = gc.getWeaponsController().getOneFromAnyPrototype();  //задаем случайное оружие
         this.visionRadius = 170.0f;
         this.sleepTimer = 0;
+//        this.sound = Gdx.audio.newSound(Gdx.files.internal("audio/explosion.wav"));
 
     }
 
@@ -68,6 +72,18 @@ public class Hero extends GameCharacter {
         coins = 0;
         hp = hpMax;
         state = State.IDLE;
+    }
+
+//    /**
+//     * переопределили для проигрывания звука получения удара
+//     * @param attacker
+//     * @param amount
+//     * @return
+//     */
+    @Override
+    public boolean takeDamage(GameCharacter attacker, int amount) {
+        gc.getInfoController().setupAnyAmount(position.x, position.y, Color.RED, "-", amount);
+        return super.takeDamage(attacker, amount);
     }
 
     /**
@@ -211,4 +227,7 @@ public class Hero extends GameCharacter {
 //            }
 //        }
     }
+//    public void dispose(){
+//        sound.dispose();
+//    }
 }

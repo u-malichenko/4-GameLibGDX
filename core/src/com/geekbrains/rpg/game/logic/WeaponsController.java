@@ -19,16 +19,17 @@ public class WeaponsController extends ObjectPool<Weapon> {
 
     public WeaponsController(GameController gc) {
         this.gc = gc;
-        this.loadPrototypes(); //подтягиваем прототипы
+        this.loadPrototypes(); //подтягиваем прототипы всех оружий
     }
 
     /**
      * когда какое то оружие должно выпасть на экран:
      */
-    public void setup(float x, float y) {
+    public void setup(float x, float y, Weapon w) {
         Weapon out = getActiveElement(); //вытаскиваем оружие из пула
-        out.copyFrom(prototypes.get(MathUtils.random(0,prototypes.size()-1)));        //TODO копируем случайное оружие
-        forge(out); //куем оружие
+        //out.copyFrom(prototypes.get(MathUtils.random(0,prototypes.size()-1)));        //TODO копируем настройки оружия из случайного прототипа
+        out.copyFrom(w);
+        //forge(out); //закаливаем оружие
         out.setPosition(x, y);        //задаем оружию текущую позицию:
         out.activate();
     }
@@ -38,9 +39,9 @@ public class WeaponsController extends ObjectPool<Weapon> {
      */
     public Weapon getOneFromAnyPrototype (){
         Weapon out = new Weapon(gc); //создаем пустой экземпляр оружия
-        out.copyFrom(prototypes.get(MathUtils.random(0, prototypes.size()-1))); //выбираем случайный тип оружия и копируем его
+        out.copyFrom(prototypes.get(MathUtils.random(0, prototypes.size()-1))); //копируем настройки оружия из случайного прототипа
         forge(out);
-        return out;
+        return out; //возвращаем это оружие
     }
 
     /**
@@ -67,6 +68,9 @@ public class WeaponsController extends ObjectPool<Weapon> {
         checkPool();
     }
 
+    /**
+     * при старте загружаются все виды оружий в массив проптотайпс
+     */
     public void loadPrototypes (){
         prototypes = new ArrayList<>();
         BufferedReader reader = null;

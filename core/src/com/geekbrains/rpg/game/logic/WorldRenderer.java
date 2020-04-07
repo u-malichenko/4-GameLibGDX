@@ -102,9 +102,14 @@ public class WorldRenderer {
             drawables[w.getCellY()].add(w);
         }
         //отрисовка поверапсов:
-        for (int i = 0; i < gc.getPowerUpController().getActiveList().size(); i++) {
-            PowerUp p = gc.getPowerUpController().getActiveList().get(i);
-            drawables[p.getCellY()].add(p);
+        for (int i = 0; i < gc.getPowerUpsController().getActiveList().size(); i++) {
+            PowerUp p = gc.getPowerUpsController().getActiveList().get(i);
+            System.out.println("p.getCellY() = "+ p.getCellY());
+            if(p.getCellY()>0) {
+                drawables[p.getCellY()].add(p);
+            }else{
+                drawables[0].add(p);
+            }
         }
         //отрисовка бонусов:
         for (int i = 0; i < gc.getBonusController().getActiveList().size(); i++) {
@@ -137,6 +142,7 @@ public class WorldRenderer {
             }
         }
         gc.getSpecialEffectsController().render(batch); //отрисовка анамации ударов, поверх всего
+        gc.getInfoController().render(batch,font10);
         batch.end();
         frameBuffer.end();//закончили с буфером отрисокой МИРА
 
@@ -148,8 +154,8 @@ public class WorldRenderer {
         batch.begin(); //вывод на экран с использованием шейдера
         batch.setShader(shaderProgram); //устонавливаем при отрисовке шейдкрную программу - активировать шецйдер
         shaderProgram.setUniformf(shaderProgram.getUniformLocation("time"), gc.getWorldTime()); //пробрасываем переменные в шейдер
-        shaderProgram.setUniformf(shaderProgram.getUniformLocation("px"), pov.x, 1280.0f);
-        shaderProgram.setUniformf(shaderProgram.getUniformLocation("py"), pov.y, 720.0f);
+        shaderProgram.setUniformf(shaderProgram.getUniformLocation("px"), pov.x, ScreenManager.WORLD_WIDTH);
+        shaderProgram.setUniformf(shaderProgram.getUniformLocation("py"), pov.y, ScreenManager.WORLD_WIDTH);
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.draw(frameBufferRegion, 0, 0);//нарисовали фрейм буфер

@@ -1,7 +1,7 @@
 package com.geekbrains.rpg.game.logic;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Vector2;
 import com.geekbrains.rpg.game.screens.ScreenManager;
 
@@ -14,20 +14,22 @@ import java.util.List;
  */
 public class GameController {
     private ProjectilesController projectilesController;//TODO свернуть все контроллеры в класс контроллер
-    private PowerUpController powerUpController;
+    private PowerUpsController powerUpsController;
     private MonstersController monstersController;
     private WeaponsController weaponsController;
     private SpecialEffectsController specialEffectsController;
+    private InfoController infoController;
     private BonusController bonusController;
     private List<GameCharacter> allCharacters;
+    private Music music;
     private Map map;
     private Hero hero;
     private Vector2 tmp, tmp2;
     private Vector2 mouse;
     private float worldTime;
 
-    public PowerUpController getPowerUpController() {
-        return powerUpController;
+    public PowerUpsController getPowerUpsController() {
+        return powerUpsController;
     }
     /**
      * геттер на всех персонажей нужен для GameCharacter.onDeath -сброса у дохлого персонажа состояния атаки у всех остальных
@@ -67,6 +69,10 @@ public class GameController {
     public SpecialEffectsController getSpecialEffectsController() {
         return specialEffectsController;
     }
+    public InfoController getInfoController() {
+        return infoController;
+    }
+
     /**
      * монстр контроллер можно создать только после того как мапа будет готова такак мы там ее используем для проверки залипания:
      * this.monstersController = new MonstersController(this, 5); - передаем туда ссылку на эту игру и колличество монстров в пачке
@@ -75,9 +81,10 @@ public class GameController {
     public GameController() {
         this.allCharacters = new ArrayList<>();
         this.projectilesController = new ProjectilesController(this);
-        this.powerUpController = new PowerUpController(this);
+        this.powerUpsController = new PowerUpsController(this);
         this.weaponsController = new WeaponsController(this);
         this.bonusController = new BonusController(this);
+        this.infoController = new InfoController();
         this.hero = new Hero(this);
         this.map = new Map();
         this.monstersController = new MonstersController(this, 15);
@@ -85,6 +92,11 @@ public class GameController {
         this.tmp = new Vector2(0, 0);
         this.tmp2 = new Vector2(0, 0);
         this.mouse = new Vector2(0, 0);
+        this.music =Gdx.audio. newMusic(Gdx.files.internal("audio/theme-3.ogg"));
+        this.music.setLooping(true); //зацикливание музыки
+        this.music.setVolume(0.01f);
+        this.music.play();
+
     }
 
     /**
@@ -117,8 +129,9 @@ public class GameController {
         checkCollisions();
         projectilesController.update(dt);
         weaponsController.update(dt);
-        powerUpController.update(dt);
+        powerUpsController.update(dt);
         specialEffectsController.update(dt);
+        infoController.update(dt);
         bonusController.update(dt);
     }
 
@@ -250,11 +263,15 @@ public class GameController {
                 }
             }
         }
-        for (int i = 0; i < powerUpController.getActiveList().size(); i++) {
-            PowerUp p = powerUpController.getActiveList().get(i);
+        for (int i = 0; i < powerUpsController.getActiveList().size(); i++) {
+            PowerUp p = powerUpsController.getActiveList().get(i);
             if (p.getPosition().dst(hero.getPosition()) < 24) {
                 p.consume(hero);
             }
         }
+    }
+    public void dispose(){
+        hero.dispose();
+        music.dispose(); //отключаем так как музыка не относиться к джаве - лежит на диске
     }
 }
