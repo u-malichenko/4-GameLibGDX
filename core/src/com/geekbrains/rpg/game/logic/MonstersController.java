@@ -1,5 +1,7 @@
 package com.geekbrains.rpg.game.logic;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.geekbrains.rpg.game.logic.utils.ObjectPool;
@@ -38,7 +40,7 @@ public class MonstersController extends ObjectPool<Monster> {
      */
     public MonstersController(GameController gc, int initialCount) {
         this.gc = gc;
-        this.spawnPeriod = 2.0f;
+        this.spawnPeriod = 15.0f;
         for (int i = 0; i < initialCount; i++) {
             getActiveElement().generateMe();
         }
@@ -72,5 +74,17 @@ public class MonstersController extends ObjectPool<Monster> {
             getActiveList().get(i).update(dt);
         }
         checkPool();
+    }
+
+
+    public boolean checkVisionMonster(GameCharacter gh){
+        for (int i = 0; i < getActiveList().size(); i++) {
+            Monster m = getActiveList().get(i);
+            if (gh.position.dst(m.getPosition()) < gh.visionRadius) {
+                gh.target = m;
+                return true;
+            }
+        }
+        return false;
     }
 }

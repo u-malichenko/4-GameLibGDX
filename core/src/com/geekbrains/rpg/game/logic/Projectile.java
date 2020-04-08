@@ -11,11 +11,17 @@ import com.geekbrains.rpg.game.logic.utils.Poolable;
  * private GameCharacter owner; - хозяин снаряда
  */
 public class Projectile implements Poolable, MapElement {
+    private GameController gc;
     private TextureRegion textureRegion;
     private GameCharacter owner;
     private Vector2 position;
     private Vector2 velocity;
+    private int damage;
     private boolean active;
+
+    public int getDamage() {
+        return damage;
+    }
 
     /**
      * геттер на влвдельца снаряда
@@ -26,13 +32,18 @@ public class Projectile implements Poolable, MapElement {
     }
 
     @Override
+    public float getY() {
+        return position.y;
+    }
+
+    @Override
     public int getCellX() {
-        return (int) position.x / 80;
+        return (int) position.x / Map.CELL_WIDTH;
     }
 
     @Override
     public int getCellY() {
-        return (int) position.y / 80;
+        return (int) position.y / Map.CELL_HEIGHT;
     }
 
     public Vector2 getPosition() {
@@ -44,7 +55,8 @@ public class Projectile implements Poolable, MapElement {
         return active;
     }
 
-    public Projectile() {
+    public Projectile(GameController gc) {
+        this.gc = gc;
         this.textureRegion = null;
         this.position = new Vector2(0, 0);
         this.velocity = new Vector2(0, 0);
@@ -62,11 +74,12 @@ public class Projectile implements Poolable, MapElement {
      */
 
 
-    public void setup(GameCharacter owner, TextureRegion textureRegion, float x, float y, float targetX, float targetY) {
+    public void setup(GameCharacter owner, TextureRegion textureRegion, float x, float y, float targetX, float targetY, int damage) {
         this.owner = owner;
         this.textureRegion = textureRegion;
         this.position.set(x, y);
         this.velocity.set(targetX, targetY).sub(x, y).nor().scl(800.0f);
+        this.damage = damage;
         this.active = true;
     }
 
@@ -81,7 +94,7 @@ public class Projectile implements Poolable, MapElement {
 
     public void update(float dt) {
         position.mulAdd(velocity, dt);
-        if (position.x < 0 || position.x > 1280 || position.y < 0 || position.y > 720) {
+        if (position.x < 0 || position.x > gc.getMap().getWidthLimit() || position.y < 0 || position.y > gc.getMap().getHeightLimit()) {
             deactivate();
         }
     }

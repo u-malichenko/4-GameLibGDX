@@ -12,6 +12,7 @@ public abstract class AbstractScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
+        ScreenManager.getInstance().resize(width, height);//скринменеджез - метод ресайз - пересчитать новве размерв окна
     }
 
     @Override

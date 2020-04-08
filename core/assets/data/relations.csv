@@ -1,0 +1,6 @@
+ZERO   ,HUMAN      ,UNDEAD     ,GOBLIN      ,DEMON  ,ELF
+HUMAN  ,1            ,-1        ,-1         ,-1     ,0
+UNDEAD  ,0          ,1         ,0          ,0      ,0
+GOBLIN ,-1          ,0          ,1          ,0      ,-1
+DEMON   ,-1         ,0          ,0          ,1     ,-1
+ELF     ,0          ,-1         ,-1         ,-1     ,1

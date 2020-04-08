@@ -3,6 +3,7 @@ package com.geekbrains.rpg.game.screens.utils;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -36,13 +37,18 @@ public class Assets {
     public void loadAssets(ScreenManager.ScreenType type) {
         switch (type) {
             case MENU:
-                assetManager.load("images/game.pack", TextureAtlas.class);
+                assetManager.load("images/game.pack", TextureAtlas.class);// атлас для экрана меню
+                createStandardFont(14);
                 createStandardFont(24);
                 createStandardFont(72);
                 break;
             case GAME:
                 assetManager.load("images/game.pack", TextureAtlas.class);
+                //TODO assetManager.load("audio/explosion.wav", Sound.class);
+                createStandardFont(3);
+                createStandardFont(10);
                 createStandardFont(32);
+                createStandardFont(72);
                 break;
         }
     }

@@ -1,7 +1,9 @@
 package com.geekbrains.rpg.game.logic;
 
-import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Vector2;
+import com.geekbrains.rpg.game.screens.ScreenManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,15 +13,24 @@ import java.util.List;
  * private List<GameCharacter> allCharacters; - список всех персонажей
  */
 public class GameController {
-    private ProjectilesController projectilesController;
+    private ProjectilesController projectilesController;//TODO свернуть все контроллеры в класс контроллер
+    private PowerUpsController powerUpsController;
     private MonstersController monstersController;
-    private WeaponController weaponController;
+    private WeaponsController weaponsController;
+    private SpecialEffectsController specialEffectsController;
+    private InfoController infoController;
+    private BonusController bonusController;
     private List<GameCharacter> allCharacters;
-    private List<Weapon> allWeapon;
+    private Music music;
     private Map map;
     private Hero hero;
     private Vector2 tmp, tmp2;
+    private Vector2 mouse;
+    private float worldTime;
 
+    public PowerUpsController getPowerUpsController() {
+        return powerUpsController;
+    }
     /**
      * геттер на всех персонажей нужен для GameCharacter.onDeath -сброса у дохлого персонажа состояния атаки у всех остальных
      * @return
@@ -27,15 +38,15 @@ public class GameController {
     public List<GameCharacter> getAllCharacters() {
         return allCharacters;
     }
-
-    public List<Weapon> getAllWeapon() {
-        return allWeapon;
+    public float getWorldTime() {
+        return worldTime;
     }
-
+    public Vector2 getMouse() {
+        return mouse;
+    }
     public Hero getHero() {
         return hero;
     }
-
     /**
      * геттер на контроллер монстров
      * @return
@@ -43,13 +54,23 @@ public class GameController {
     public MonstersController getMonstersController() {
         return monstersController;
     }
-
     public Map getMap() {
         return map;
     }
-
     public ProjectilesController getProjectilesController() {
         return projectilesController;
+    }
+    public WeaponsController getWeaponsController() {
+        return weaponsController;
+    }
+    public BonusController getBonusController() {
+        return bonusController;
+    }
+    public SpecialEffectsController getSpecialEffectsController() {
+        return specialEffectsController;
+    }
+    public InfoController getInfoController() {
+        return infoController;
     }
 
     /**
@@ -59,14 +80,23 @@ public class GameController {
      */
     public GameController() {
         this.allCharacters = new ArrayList<>();
-        this.allWeapon = new ArrayList<>();
-        this.projectilesController = new ProjectilesController();
+        this.projectilesController = new ProjectilesController(this);
+        this.powerUpsController = new PowerUpsController(this);
+        this.weaponsController = new WeaponsController(this);
+        this.bonusController = new BonusController(this);
+        this.infoController = new InfoController();
         this.hero = new Hero(this);
         this.map = new Map();
-        this.weaponController =new WeaponController(this,7);
-        this.monstersController = new MonstersController(this, 5);
+        this.monstersController = new MonstersController(this, 15);
+        this.specialEffectsController = new SpecialEffectsController();
         this.tmp = new Vector2(0, 0);
         this.tmp2 = new Vector2(0, 0);
+        this.mouse = new Vector2(0, 0);
+        this.music =Gdx.audio. newMusic(Gdx.files.internal("audio/theme-3.ogg"));
+        this.music.setLooping(true); //зацикливание музыки
+        this.music.setVolume(0.01f);
+        this.music.play();
+
     }
 
     /**
@@ -80,21 +110,29 @@ public class GameController {
      *         allCharacters.addAll(monstersController.getActiveList());
      *
      *         monstersController.update(dt);
-     *
+     * отрисовка оружия:
+     *         weaponsController.update(dt);
      * @param dt
      */
     public void update(float dt) {
+        mouse.set(Gdx.input.getX(),Gdx.input.getY()); //в мышку зашиваем координаты х у
+        ScreenManager.getInstance().getViewport().unproject(mouse); // преобразует мышинные координаты в мировые координаты проецирует на карту
+        worldTime +=dt;
         allCharacters.clear();
-
-        //allWeapon.clear();
 
         allCharacters.add(hero);
         allCharacters.addAll(monstersController.getActiveList());
 
-        hero.update(dt);
         monstersController.update(dt);
+        hero.update(dt);
+
         checkCollisions();
         projectilesController.update(dt);
+        weaponsController.update(dt);
+        powerUpsController.update(dt);
+        specialEffectsController.update(dt);
+        infoController.update(dt);
+        bonusController.update(dt);
     }
 
     public void collideUnits(GameCharacter u1, GameCharacter u2) {
@@ -129,6 +167,12 @@ public class GameController {
      *                 Monster m2 = monstersController.getActiveList().get(j);
      *                 collideUnits(m, m2);
      *
+     * перебираем все оружие и у активного оружия если расстояние от центра героя и до центра оружия меньше 20 тогда берем оружие
+     *         for (int i = 0; i < weaponsController.getActiveList().size(); i++) {
+     *             Weapon w = weaponsController.getActiveList().get(i);
+     *             if (hero.getPosition().dst(w.getPosition()) < 20) {
+     *                 w.consume(hero);
+     *             }
      * прожектиль выпустили он летит по карте проверяется возможность удара в стену:
      *         for (int i = 0; i < projectilesController.getActiveList().size(); i++) {
      *             Projectile p = projectilesController.getActiveList().get(i);
@@ -178,6 +222,20 @@ public class GameController {
                 collideUnits(m, m2);
             }
         }
+        //перебираем все оружие и у активного оружия, если расстояние от центра героя и до центра оружия меньше 20 тогда берем оружие
+        for (int i = 0; i < weaponsController.getActiveList().size(); i++) {
+            Weapon w = weaponsController.getActiveList().get(i);
+            if (hero.getPosition().dst(w.getPosition()) < 20) {
+                w.consume(hero);
+            }
+        }
+        //перебираем все bonus и у активного , если расстояние от центра героя и до центра bonus меньше 20 тогда берем
+        for (int i = 0; i < bonusController.getActiveList().size(); i++) {
+            Bonus bonus = bonusController.getActiveList().get(i);
+            if (hero.getPosition().dst(bonus.getPosition()) < 20) {
+                bonus.consume(hero);
+            }
+        }
         //прожектиль выпустили он летит по карте
         for (int i = 0; i < projectilesController.getActiveList().size(); i++) {
             Projectile p = projectilesController.getActiveList().get(i);
@@ -186,10 +244,10 @@ public class GameController {
                 p.deactivate();
                 continue;
             }
-
-            if (p.getPosition().dst(hero.getPosition()) < 24 && p.getOwner() != hero) {
+            //если снаряд влетел:
+            if (p.getPosition().dst(hero.getPosition()) < 18 && p.getOwner() != hero) {
                 p.deactivate();
-                hero.takeDamage(p.getOwner(), 1);
+                hero.takeDamage(p.getOwner(), p.getDamage());
             }
             //проверяем на столкноверие с АКТИВНЫМИ монстрами, пребираем активных монстров:
             for (int j = 0; j < monstersController.getActiveList().size(); j++) {
@@ -199,15 +257,21 @@ public class GameController {
                     continue;
                 }
                 //снаряд может влететь в монстра не хозяина:
-                if (p.getPosition().dst(m.getPosition()) < 24) {
+                if (p.getPosition().dst(m.getPosition()) < 18) {
                     p.deactivate();
-                    //если монстр умер то начисляем бонусы герою)
-                    // TODO даже если монстры убивали сами себя случайно целясь в героя
-                    if (m.takeDamage(p.getOwner(), 1)) {
-                        hero.addCoins(MathUtils.random(1, 10));
-                    }
+                    m.takeDamage(p.getOwner(), p.getDamage());
                 }
             }
         }
+        for (int i = 0; i < powerUpsController.getActiveList().size(); i++) {
+            PowerUp p = powerUpsController.getActiveList().get(i);
+            if (p.getPosition().dst(hero.getPosition()) < 24) {
+                p.consume(hero);
+            }
+        }
+    }
+    public void dispose(){
+        hero.dispose();
+        music.dispose(); //отключаем так как музыка не относиться к джаве - лежит на диске
     }
 }

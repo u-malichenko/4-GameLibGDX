@@ -1,7 +1,7 @@
 name=game.pack
 filename=game.pack
 input=images
-output=..\core\assets
+output=..\core\assets\images
 
 alias=true
 alphaThreshold=0
